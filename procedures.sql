@@ -1,8 +1,6 @@
 -- Procedure file for lab2c
 -- Matt Parker and Sungil Ahn
 
-
-
 DROP PROCEDURE IF EXISTS FinalScore;
 
 DELIMITER $$
