@@ -38,6 +38,16 @@ SELECT man_status from Manuscript WHERE id = 6;
 UPDATE Manuscript 
 	SET man_status = "accepted"
 	 	WHERE id = 1;
--- should read "typesetting"
-SELECT man_status FROM Manuscript WHERE id = 1;
+-- should read "typesetting" and have the current date
+SELECT man_status, status_last_updated FROM Manuscript WHERE id = 1;
+
+UPDATE Feedback
+	SET A_score = 10
+		WHERE manuscript_id = 7 and reviewer_id = 3;
+
+-- should read 10 and have the current date
+SELECT A_score, recommendation_date FROM Feedback WHERE manuscript_id = 7 AND reviewer_id = 3;
+
+
+
 

@@ -5,6 +5,9 @@
 
 DROP TRIGGER IF EXISTS NoReviewerICode;
 DROP TRIGGER IF EXISTS AcceptedUpdate;
+DROP TRIGGER IF EXISTS ReviewerDied;
+DROP TRIGGER IF EXISTS ManStatusUpdate;
+DROP TRIGGER IF EXISTS FeedbackUpdate;
 
 
 -- Trigger to check whether or not the ICode for the Manuscript has been specified by an Author
@@ -67,3 +70,27 @@ CREATE TRIGGER AcceptedUpdate BEFORE UPDATE ON Manuscript
 		END IF;
 	END$$
 DELIMITER ;
+
+DELIMITER $$
+
+
+-- Automatically updates the status_last_updated for the manuscript table
+CREATE TRIGGER ManStatusUpdate BEFORE UPDATE ON Manuscript
+    FOR EACH ROW
+    BEGIN
+        SET NEW.status_last_updated = CURDATE();
+    END$$
+DELIMITER ; 
+
+DELIMITER $$
+
+
+-- Automatically update the recommendation_date to the current date
+CREATE TRIGGER FeedbackUpdate BEFORE UPDATE ON Feedback
+    FOR EACH ROW
+    BEGIN
+        SET NEW.recommendation_date = CURDATE();
+    END$$
+DELIMITER ;
+
+
