@@ -8,3 +8,9 @@ The main files for this database are 'tables.sql', 'insert.sql', 'views.sql', 'p
 In addition to these files, there are helper files for the procedure and trigger files to ensure that they are working properly. When testing the procedures and triggers, 'proceduressetup.sql' and 'triggerssetup.sql' should be run first. These files create small tables with test-specific data. Following this, 'procedures.sql' and 'triggers.sql' should be run followed by their respective test files. There are comments within the test files that outline the expected behavior of each query or action on the database. 
 
 
+#### Triggers.sql
+In addition to the triggers outlined in the lab description, this file contains two triggers to automatically update the date columns in the Manuscript and Feedback tables. The reason for this is that there are a few instances where we need to keep track of the last update on these tables. 
+
+
+
+
