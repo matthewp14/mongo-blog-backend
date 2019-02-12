@@ -10,9 +10,9 @@ BEGIN
 	SELECT AVG(A_score+E_score+M_score+C_score) INTO avg_score FROM Feedback WHERE manuscript_id = man_id;
 
 	IF avg_score < 37 THEN 
-		SELECT "rejected" INTO decision;
+		SELECT "reject" INTO decision;
 	ELSE 
-		SELECT "accepted" INTO decision;
+		SELECT "accept" INTO decision;
 	END IF;
 END$$
 

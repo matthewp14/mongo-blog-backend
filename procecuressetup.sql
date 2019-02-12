@@ -1,0 +1,39 @@
+-- Procedure setup file for lab2c
+-- Matt Parker and Sungil Ahn
+
+DROP TABLE IF EXISTS Feedback;
+
+CREATE TABLE Feedback (
+manuscript_id INT NOT NULL REFERENCES Manuscript(id),
+reviewer_id INT NOT NULL REFERENCES Reviewer(id) ON DELETE CASCADE,
+A_score INT UNSIGNED,
+C_score INT UNSIGNED,
+M_score INT UNSIGNED,
+E_score INT UNSIGNED,
+recommendation VARCHAR(6),
+recommendation_date DATE,
+assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+PRIMARY KEY (manuscript_id, reviewer_id));
+
+
+INSERT INTO Feedback VALUES (4,2,NULL,NULL,NULL,NULL,NULL,NULL,NOW());
+INSERT INTO Feedback VALUES (4,3,10,7,8,9,"accept","2018-08-17",NOW());
+INSERT INTO Feedback VALUES (4,4,3,4,2,4,"reject","2018-08-16",NOW());
+INSERT INTO Feedback VALUES (5,2,8,9,10,9,"accept","2018-09-18",NOW());
+INSERT INTO Feedback VALUES (5,3,NULL,NULl,NULL,NULL,NULL,NULL,NOW());
+INSERT INTO Feedback VALUES (5,5,NULL,NULL,NULL,NULL,NULL,NULL,NOW());
+INSERT INTO Feedback VALUES (6,8,NULL,NULL,NULL,NULL,NULL,NULL,NOW());
+INSERT INTO Feedback VALUES (7,9,NULL,NULL,NULL,NULL,NULL,NULL,NOW());
+INSERT INTO Feedback VALUES (7,10,8,9,9,8,"accept","2018-09-18",NOW());
+INSERT INTO Feedback VALUES (7,3,10,10,10,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (7,5,10,10,10,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (7,6,10,10,10,9,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (8,6,10,8,10,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (8,7,10,10,9,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (8,10,10,9,9,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (9,6,10,9,8,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (9,7,10,9,10,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (9,8,10,9,10,9,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (10,8,9,10,10,8,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (10,9,8,10,10,10,"accept","2018-09-09",NOW());
+INSERT INTO Feedback VALUES (10,10,10,10,10,8,"accept","2018-09-09",NOW());
