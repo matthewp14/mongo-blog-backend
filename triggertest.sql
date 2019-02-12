@@ -24,7 +24,8 @@ SELECT man_status FROM Manuscript WHERE id = 12;
 -- ----------------------------- --
 
 -- Reviewer 8 is the only one editing manuscript number 6 so this should cause the trigger to take action
-DELETE * FROM Reviewer WHERE id = 8;
+DELETE FROM Feedback WHERE reviewer_id = 8;
+DELETE FROM Feedback WHERE reviewer_id = 1;
 -- should read 'rejected'
 SELECT man_status from Manuscript WHERE id = 6;
 
@@ -39,3 +40,4 @@ UPDATE Manuscript
 	 	WHERE id = 1;
 -- should read "typesetting"
 SELECT man_status FROM Manuscript WHERE id = 1;
+
