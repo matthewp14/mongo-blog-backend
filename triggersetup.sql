@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS Manuscript;
-DROP TABLE IF EXISTS Reviewer; 
 DROP TABLE IF EXISTS Feedback;
 DROP TABLE IF EXISTS Reviewer_ICode;
+DROP TABLE IF EXISTS Reviewer; 
 
 
 CREATE TABLE Manuscript (
@@ -23,13 +23,14 @@ email VARCHAR(45) NOT NULL,
 organization_id INT NOT NULL REFERENCES Organizations(id));
 
 CREATE TABLE Reviewer_ICode (
-reviewer_id INT NOT NULL REFERENCES Reviewer(id),
+reviewer_id INT NOT NULL,
 ICode_id MEDIUMINT NOT NULL REFERENCES RICodes(code),
+CONSTRAINT FOREIGN KEY(reviewer_id) REFERENCES Reviewer(id) ON DELETE CASCADE,
 PRIMARY KEY (reviewer_id, ICode_id));
   
 CREATE TABLE Feedback (
 manuscript_id INT NOT NULL REFERENCES Manuscript(id),
-reviewer_id INT NOT NULL REFERENCES Reviewer(id) ON DELETE CASCADE,
+reviewer_id INT NOT NULL,
 A_score INT UNSIGNED,
 C_score INT UNSIGNED,
 M_score INT UNSIGNED,
@@ -37,7 +38,9 @@ E_score INT UNSIGNED,
 recommendation VARCHAR(6),
 recommendation_date DATE,
 assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+CONSTRAINT FOREIGN KEY(reviewer_id) REFERENCES Reviewer(id)  ON DELETE CASCADE,
 PRIMARY KEY (manuscript_id, reviewer_id));
+
 
 INSERT INTO Manuscript VALUES (1,"Nulla aliquet. Proin","lectus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec dignissim magna a tortor. Nunc commodo auctor velit. Aliquam nisl. Nulla eu neque pellentesque massa lobortis ultrices. Vivamus rhoncus. Donec est. Nunc ullamcorper, velit in aliquet lobortis, nisi nibh lacinia orci, consectetuer euismod est arcu ac orci. Ut semper pretium neque. Morbi quis urna. Nunc quis arcu vel quam dignissim pharetra. Nam ac nulla. In tincidunt congue turpis. In condimentum. Donec at arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae Donec tincidunt. Donec vitae erat vel pede blandit congue. In","2018-03-29","received",57,7,19,"2018-08-09");
 INSERT INTO Manuscript VALUES (2,"viverra. Donec tempus,","ac mattis ornare, lectus ante dictum mi, ac mattis velit justo nec ante. Maecenas mi felis, adipiscing fringilla, porttitor vulputate, posuere vulputate, lacus. Cras interdum. Nunc sollicitudin commodo ipsum. Suspendisse non leo. Vivamus nibh dolor, nonummy ac, feugiat non, lobortis quis, pede. Suspendisse dui. Fusce diam nunc, ullamcorper eu, euismod ac, fermentum vel, mauris. Integer sem elit, pharetra ut, pharetra sed, hendrerit a, arcu. Sed et libero. Proin mi. Aliquam gravida mauris ut mi. Duis risus odio, auctor vitae, aliquet nec, imperdiet nec, leo. Morbi neque tellus, imperdiet non, vestibulum nec, euismod in, dolor. Fusce feugiat. Lorem ipsum dolor sit","2019-01-21","received",76,5,9,"2018-08-19");
