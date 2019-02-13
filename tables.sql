@@ -61,14 +61,15 @@ CREATE TABLE Reviewer (
 );
 
 CREATE TABLE Reviewer_ICode (
-	reviewer_id INT NOT NULL REFERENCES Reviewer(id),
+	reviewer_id INT NOT NULL,
 	ICode_id MEDIUMINT NOT NULL REFERENCES RICodes(code),
+    CONSTRAINT FOREIGN KEY (reviewer_id) REFERENCES Reviewer(id) ON DELETE CASCADE,
 	PRIMARY KEY (reviewer_id, ICode_id)
 );
   
 CREATE TABLE Feedback (
 manuscript_id INT NOT NULL REFERENCES Manuscript(id),
-reviewer_id INT NOT NULL REFERENCES Reviewer(id) ON DELETE CASCADE,
+reviewer_id INT NOT NULL,
 A_score INT UNSIGNED,
 C_score INT UNSIGNED,
 M_score INT UNSIGNED,
@@ -76,6 +77,7 @@ E_score INT UNSIGNED,
 recommendation VARCHAR(6),
 recommendation_date DATE,
 assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+CONSTRAINT FOREIGN KEY (reviewer_id)  REFERENCES Reviewer(id) ON DELETE CASCADE,
 PRIMARY KEY (manuscript_id, reviewer_id));
 
 CREATE TABLE Editor (
