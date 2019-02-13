@@ -34,7 +34,7 @@ CREATE TRIGGER ReviewerDied BEFORE DELETE ON Reviewer
     BEGIN
         UPDATE Manuscript
             SET man_status = 'received'
-        WHERE Manuscript.id IN (
+        WHERE id IN (
             -- any manuscript in “UnderReview” state for which that reviewer was the only reviewer
             SELECT id
             FROM Manuscript

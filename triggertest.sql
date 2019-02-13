@@ -24,10 +24,13 @@ SELECT man_status FROM Manuscript WHERE id = 12;
 -- ----------------------------- --
 
 -- Reviewer 8 is the only one editing manuscript number 6 so this should cause the trigger to take action
-DELETE FROM Feedback WHERE reviewer_id = 8;
-DELETE FROM Feedback WHERE reviewer_id = 1;
--- should read 'rejected'
-SELECT man_status from Manuscript WHERE id = 6;
+DELETE FROM Reviewer WHERE id = 8;
+SELECT man_status FROM Manuscript WHERE id = 6; -- should be "received"
+
+-- reviewers 9, 10 also have ICode 35 (the manuscript's ICode)
+DELETE FROM Reviewer WHERE id = 9;
+DELETE FROM Reviewer WHERE id = 10;
+SELECT man_status from Manuscript WHERE id = 6; -- should now be "rejected"
 
 
 -- ----------------------------- --
