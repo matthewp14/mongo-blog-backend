@@ -3,3 +3,5 @@
 *.pdf
 mysql-demo
 Team32Lab2.ini
+*test.sql
+*setup.sql

@@ -14,3 +14,6 @@ In addition to the triggers outlined in the lab description, this file contains 
 ### Configuration
 You MUST copy `Team32Lab2.ini.example` into `Team32Lab2.ini` and configure it properly for the CLI to connect to mysql.
 Put your own database credentials in it.
+
+### PYTHON VERSION
+This will *not* run on Python < 3.6 since the CLI uses f-strings! So please make sure your Python is version 3.6/3.7 before running this program!

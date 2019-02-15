@@ -1,14 +1,11 @@
 -- Trigger file for lab2c
 -- Matt Parker and Sungil Ahn
 
-
-
 DROP TRIGGER IF EXISTS NoReviewerICode;
 DROP TRIGGER IF EXISTS AcceptedUpdate;
 DROP TRIGGER IF EXISTS ReviewerDied;
 DROP TRIGGER IF EXISTS ManStatusUpdate;
 DROP TRIGGER IF EXISTS FeedbackUpdate;
-
 
 -- Trigger to check whether or not the ICode for the Manuscript has been specified by an Author
 DELIMITER $$
@@ -83,8 +80,6 @@ CREATE TRIGGER ManStatusUpdate BEFORE UPDATE ON Manuscript
 DELIMITER ; 
 
 DELIMITER $$
-
-
 -- Automatically update the recommendation_date to the current date
 CREATE TRIGGER FeedbackUpdate BEFORE UPDATE ON Feedback
     FOR EACH ROW
@@ -92,5 +87,3 @@ CREATE TRIGGER FeedbackUpdate BEFORE UPDATE ON Feedback
         SET NEW.recommendation_date = CURDATE();
     END$$
 DELIMITER ;
-
-
