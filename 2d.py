@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from mysql.connector import MySQLConnection, Error, errorcode
 import sys
 
-# read configuration file
+"""read configuration file"""
 filename = 'Team32Lab2.ini'
 section = 'mysql'
 
@@ -16,7 +16,7 @@ if parser.has_section(section):
 else:
 	raise Exception(f'section {section} not found in ${filename}!')
 
-# connect to the database
+"""connect to the database"""
 try:
 	conn = MySQLConnection(**credentials)
 	if conn.is_connected():
@@ -35,7 +35,29 @@ except Error as err:
 		print(err)
 		sys.exit(4)
 
-# we're assuming you ran all of the .sql files necessary
+"""we're assuming you ran all of the .sql files necessary"""
+
+"""Step 1. register or login"""
+errmsg = 'Refer to https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202 for usage.'
+while True:
+	command = input().split()
+	if command[0] == 'register':
+		if command[1] == 'author':
+			"""register author <fname> <lname> <email> <affiliation>"""
+			break
+		elif command[1] == 'editor':
+			"""register editor <fname> <lname>"""
+			break
+		elif command[1] == 'reviewer':
+			"""register reviewer <fname> <lname> <ICode 1> <ICode 2> <ICode 3>"""
+			break
+		print(errmsg)
+	elif command[0] == 'login':
+		"""login <id>"""
+		# TODO: we're supposed to figure out who the person is from their id
+		print(errmsg)
+	else:
+		print('You must register or login first! ' + errmsg)
 
 # cleanup
 try:
