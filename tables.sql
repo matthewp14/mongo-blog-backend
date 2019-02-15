@@ -43,7 +43,7 @@ CREATE TABLE Authorship
 
 CREATE TABLE Author
 (
-  id              INT PRIMARY KEY REFERENCES Users(id),
+  id              INT PRIMARY KEY REFERENCES Users (id),
   fname           VARCHAR(45) NOT NULL,
   lname           VARCHAR(45) NOT NULL,
   email           VARCHAR(45),
@@ -59,11 +59,13 @@ CREATE TABLE Organizations
 
 CREATE TABLE Reviewer
 (
-  id              INT PRIMARY KEY REFERENCES Users(id),
+  id              INT PRIMARY KEY,
   fname           VARCHAR(45) NOT NULL,
   lname           VARCHAR(45) NOT NULL,
-  email           VARCHAR(45) NOT NULL,
-  organization_id INT         NOT NULL REFERENCES Organizations (id)
+  email           VARCHAR(45),
+  organization_id INT REFERENCES Organizations (id),
+  CONSTRAINT FOREIGN KEY (id) REFERENCES Users (id) ON DELETE CASCADE,
+  CONSTRAINT UNIQUE (fname, lname)
 );
 
 CREATE TABLE Reviewer_ICode
@@ -91,7 +93,7 @@ CREATE TABLE Feedback
 
 CREATE TABLE Editor
 (
-  id    INT PRIMARY KEY REFERENCES Users(id),
+  id    INT PRIMARY KEY REFERENCES Users (id),
   fname VARCHAR(45) NOT NULL,
   lname VARCHAR(45) NOT NULL
 );
@@ -124,6 +126,5 @@ CREATE TABLE RICodes
 CREATE TABLE Users
 (
   id        INT PRIMARY KEY AUTO_INCREMENT,
-  user_id   INT NOT NULL, -- application-level join
   user_type VARCHAR(8) NOT NULL
 );
