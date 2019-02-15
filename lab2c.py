@@ -27,7 +27,7 @@ config = {
 
 
 def start():
-    initial = "null"
+    initial = " "
     
     try:
         con = mysql.connector.connect(**config)
@@ -73,9 +73,24 @@ def register(input_message,cursor):
     
     CURRENT_USER = pre_table[0]+input_message[1][1:].lower()
     
+    
     #parse out all other entries
     for x in range(2, len(input_message)):
         values.append(input_message[x])
+        
+    
+    #add quotes where necessary
+    if pre_table == "EDITOR": 
+        indices = [1,2]
+        values = add_quotes(values, indices)
+    elif pre_table == "AUTHOR":
+        indices = [1,2,3]
+        values = add_quotes(values, indices)
+    elif pre_table == "REVIEWER":
+        indices = [1,2]
+        values = add_quotes(values,indices)
+    
+    
         
     db_insert(values,cursor)
      
@@ -87,8 +102,13 @@ values[0] is the table name correctly formatted
 """
 def db_insert(values,cursor):
     
-    editor_att = " (fname,lname)"
-    REGISTER_QUERY = "INSERT INTO " + values[0]+ editor_att + " VALUES "
+    if values[0] == "Editor":
+        att_list = " (fname,lname)"
+    elif values[0] == "Author":
+        att_list = " (fname,lname,email,organization_id)"
+    
+    
+    REGISTER_QUERY = "INSERT INTO " + values[0]+ att_list+ " VALUES "
     
     
     """
@@ -110,7 +130,12 @@ def db_insert(values,cursor):
     print("Registering new user")
     cursor.execute(REGISTER_QUERY)
     
+
+def add_quotes(values, indices):
+    for num in indices: 
+        values[num] = "\"" + values[num] + "\""
     
+    return values
     
  
 """ 
