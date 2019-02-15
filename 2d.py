@@ -3,10 +3,9 @@ from mysql.connector import MySQLConnection, Error, errorcode
 from mysql.connector.cursor import MySQLCursorPrepared
 import sys
 
-"""read configuration file"""
-
 
 def config(filename='Team32Lab2.ini', section='mysql'):
+	"""read configuration file"""
 	parser = ConfigParser()
 	parser.read(filename)
 	
@@ -20,10 +19,8 @@ def config(filename='Team32Lab2.ini', section='mysql'):
 	return credentials
 
 
-"""connect to the database"""
-
-
 def connect(credentials):
+	"""connect to the database"""
 	try:
 		conn = MySQLConnection(**credentials)
 		if conn.is_connected():
@@ -45,10 +42,9 @@ def connect(credentials):
 
 """we're assuming you ran all of the .sql files necessary"""
 
-"""Step 1. register or login"""
-
 
 def user_auth(db: MySQLCursorPrepared):
+	"""Step 1. register or login"""
 	errmsg = 'Refer to https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202 for usage.'
 	while True:
 		command = input().split()
@@ -59,13 +55,17 @@ def user_auth(db: MySQLCursorPrepared):
 				if len(command) != 6:
 					print('usage: register author <fname> <lname> <email> <affiliation>')
 					continue
-
+				
 				db.execute(user_cmd, ('author'))
 				user_id = db.fetchone()['id']
 				
 				# TODO: affiliation
 				
+				# insert author
 				db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)', (user_id) + command[2:])
+				
+				print(f'Your id is {user_id}. Write it down somewhere.')
+				return user_id, 'author'
 			elif command[1] == 'editor':
 				if len(command) != 4:
 					print('usage: register editor <fname> <lname>')
@@ -74,7 +74,11 @@ def user_auth(db: MySQLCursorPrepared):
 				db.execute(user_cmd, ('editor'))
 				user_id = db.fetchone()['id']
 				
+				# insert editor
 				db.execute('INSERT INTO Editor VALUES (?, ?, ?)', (user_id) + command[2:])
+				
+				print(f'Your id is {user_id}. Write it down somewhere.')
+				return user_id, 'editor'
 			elif command[1] == 'reviewer':
 				if len(command) != 7:
 					print('usage: register reviewer <fname> <lname> <ICode 1> <ICode 2> <ICode 3>')
@@ -87,23 +91,49 @@ def user_auth(db: MySQLCursorPrepared):
 				db.execute(user_cmd, ('reviewer'))
 				user_id = db.fetchone()['id']
 				
+				# insert reviewer
 				db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)', (user_id, fname, lname))
 				
 				# insert ICodes
 				for icode in command[4:]:
 					db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', (user_id, icode))
+				
+				print(f'Your id is {user_id}. Write it down somewhere.')
+				return user_id, 'reviewer'
 			else:
 				print(errmsg)
-				continue
-
-			print(f'Your id is {user_id}. Write it down somewhere.')
-			
-			return user_id
-			
 		elif command[0] == 'login':
-			"""login <id>"""
-			# TODO: we're supposed to figure out who the person is from their id
-			print(errmsg)
+			if len(command) != 2:
+				print('usage: login <id>')
+				continue
+			
+			db.execute('SELECT * FROM Users WHERE id = ?', (command[1]))
+			user_type = db.fetchone()['user_type']
+			
+			if user_type == 'author':
+				db.execute('SELECT * FROM Author WHERE id = ?', (command[1]))
+				result = db.fetchone()
+				print(f"Hello, {result['fname']} {result['lname']}! ({result['email']})")
+				
+				# TODO: WTF is the 'status' command?
+				
+				return command[1], 'author'
+			elif user_type == 'editor':
+				db.execute('SELECT * FROM Editor WHERE id = ?', (command[1]))
+				result = db.fetchone()
+				print(f"Hello, {result['fname']} {result['lname']}!")
+				
+				# TODO: WTF is the 'status' command?
+				
+				return command[1], 'editor'
+			elif user_type == 'reviewer':
+				db.execute('SELECT * FROM Reviewer WHERE id = ?', (command[1]))
+				result = db.fetchone()
+				print(f"Hello, {result['fname']} {result['lname']}!")
+				
+				# TODO: wtf is the 'status' command?
+			
+				return command[1], 'reviewer'
 		else:
 			print('You must register or login first! ' + errmsg)
 
@@ -120,3 +150,5 @@ def cleanup(db, conn):
 if __name__ == '__main__':
 	credentials = config()
 	conn, db = connect(credentials)
+	user_id, user_type = user_auth(db)
+	cleanup(db, conn)
