@@ -11,6 +11,6 @@ In addition to these files, there are helper files for the procedure and trigger
 #### Triggers.sql
 In addition to the triggers outlined in the lab description, this file contains two triggers to automatically update the date columns in the Manuscript and Feedback tables. The reason for this is that there are a few instances where we need to keep track of the last update on these tables. 
 
-
-
-
+### Configuration
+You MUST copy `Team32Lab2.ini.example` into `Team32Lab2.ini` and configure it properly for the CLI to connect to mysql.
+Put your own database credentials in it.
