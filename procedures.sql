@@ -6,14 +6,14 @@ DROP PROCEDURE IF EXISTS FinalScore;
 DELIMITER $$
 CREATE PROCEDURE FinalScore(IN man_id INT, OUT decision VARCHAR(15))
 BEGIN
-	DECLARE avg_score INT DEFAULT 0;
-	SELECT AVG(A_score+E_score+M_score+C_score) INTO avg_score FROM Feedback WHERE manuscript_id = man_id;
+  DECLARE avg_score INT DEFAULT 0;
+  SELECT AVG(A_score + E_score + M_score + C_score) INTO avg_score FROM Feedback WHERE manuscript_id = man_id;
 
-	IF avg_score < 37 THEN 
-		SELECT "reject" INTO decision;
-	ELSE 
-		SELECT "accept" INTO decision;
-	END IF;
+  IF avg_score < 37 THEN
+    SELECT "reject" INTO decision;
+  ELSE
+    SELECT "accept" INTO decision;
+  END IF;
 END$$
 
 DELIMITER ;
