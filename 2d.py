@@ -43,62 +43,38 @@ def connect(credentials):
 """we're assuming you ran all of the .sql files necessary"""
 
 
-def user_auth(db: MySQLCursorPrepared):
+def user_auth(db):
 	"""Step 1. register or login"""
 	errmsg = 'Refer to https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202 for usage.'
 	while True:
 		command = input().split()
 		if command[0] == 'register':
-			user_cmd = 'INSERT INTO Users (user_type) VALUES (?)'
-			
 			if command[1] == 'author':
 				if len(command) != 6:
 					print('usage: register author <fname> <lname> <email> <affiliation>')
 					continue
 				
-				db.execute(user_cmd, ('author'))
-				user_id = db.fetchone()['id']
-				
-				# TODO: affiliation
-				
-				# insert author
-				db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)', (user_id) + command[2:])
-				
+				user_id = author_register(db, command[2], command[3], command[4], command[5])
 				print(f'Your id is {user_id}. Write it down somewhere.')
+				
 				return user_id, 'author'
 			elif command[1] == 'editor':
 				if len(command) != 4:
 					print('usage: register editor <fname> <lname>')
 					continue
 				
-				db.execute(user_cmd, ('editor'))
-				user_id = db.fetchone()['id']
-				
-				# insert editor
-				db.execute('INSERT INTO Editor VALUES (?, ?, ?)', (user_id) + command[2:])
-				
+				user_id = editor_register(db, command[2], command[3])
 				print(f'Your id is {user_id}. Write it down somewhere.')
+				
 				return user_id, 'editor'
 			elif command[1] == 'reviewer':
 				if len(command) != 7:
 					print('usage: register reviewer <fname> <lname> <ICode 1> <ICode 2> <ICode 3>')
 					continue
 				
-				# normalize name because it is used for unique constraint
-				fname = command[2].lower()
-				lname = command[3].lower()
-				
-				db.execute(user_cmd, ('reviewer'))
-				user_id = db.fetchone()['id']
-				
-				# insert reviewer
-				db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)', (user_id, fname, lname))
-				
-				# insert ICodes
-				for icode in command[4:]:
-					db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', (user_id, icode))
-				
+				user_id = reviewer_register(db, command[2], command[3], command[4:6])
 				print(f'Your id is {user_id}. Write it down somewhere.')
+				
 				return user_id, 'reviewer'
 			else:
 				print(errmsg)
@@ -111,35 +87,114 @@ def user_auth(db: MySQLCursorPrepared):
 			user_type = db.fetchone()['user_type']
 			
 			if user_type == 'author':
-				db.execute('SELECT * FROM Author WHERE id = ?', (command[1]))
-				result = db.fetchone()
-				print(f"Hello, {result['fname']} {result['lname']}! ({result['email']})")
+				user = user_get(db, command[1], 'author')
+				print(f"Hello, {user['fname']} {user['lname']} @ {user['email']}!")
 				
 				# TODO: WTF is the 'status' command?
 				
 				return command[1], 'author'
 			elif user_type == 'editor':
-				db.execute('SELECT * FROM Editor WHERE id = ?', (command[1]))
-				result = db.fetchone()
-				print(f"Hello, {result['fname']} {result['lname']}!")
+				user = user_get(db, command[1], 'editor')
+				print(f"Hello, {user['fname']} {user['lname']}!")
 				
 				# TODO: WTF is the 'status' command?
 				
 				return command[1], 'editor'
 			elif user_type == 'reviewer':
-				db.execute('SELECT * FROM Reviewer WHERE id = ?', (command[1]))
-				result = db.fetchone()
-				print(f"Hello, {result['fname']} {result['lname']}!")
+				user = user_get(db, command[1], 'reviewer')
+				print(f"Hello, {user['fname']} {user['lname']}!")
 				
 				# TODO: wtf is the 'status' command?
-			
+				
 				return command[1], 'reviewer'
 		else:
 			print('You must register or login first! ' + errmsg)
 
 
-# cleanup
-def cleanup(db, conn):
+def user_register(db: MySQLCursorPrepared, user_type):
+	db.execute('INSERT INTO Users (user_type) VALUES (?)', (user_type))
+	
+	return db.fetchone()['id']
+
+
+def user_get(db: MySQLCursorPrepared, user_id, user_type):
+	db.execute(f'SELECT * FROM {user_type.title()} WHERE id = ?', (user_id))
+	
+	return db.fetchone()
+
+
+def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
+	user_id = user_register(db, 'author')
+	# TODO: affiliation
+	db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)',
+	           (user_id, fname.title(), lname.title(), email, affiliation))
+	
+	return user_id
+
+
+def author_submit(db: MySQLCursorPrepared):
+	pass
+
+
+def author_status(db: MySQLCursorPrepared):
+	pass
+
+
+def editor_register(db: MySQLCursorPrepared, fname, lname):
+	user_id = user_register(db, 'editor')
+	db.execute('INSERT INTO Editor VALUES (?, ?, ?)',
+	           (user_id, fname.title(), lname.title()))
+	
+	return user_id
+
+
+def editor_status(db: MySQLCursorPrepared):
+	pass
+
+
+def editor_assign(db: MySQLCursorPrepared):
+	pass
+
+
+def editor_reject(db: MySQLCursorPrepared):
+	pass
+
+
+def editor_accept(db: MySQLCursorPrepared):
+	pass
+
+
+def editor_schedule(db: MySQLCursorPrepared):
+	pass
+
+
+def editor_publish(db: MySQLCursorPrepared):
+	pass
+
+
+def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
+	user_id = user_register(db, 'reviewer')
+	db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)',
+	           (user_id, fname.title(), lname.title()))
+	for icode in icodes:
+		db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', (user_id, icode))
+	
+	return user_id
+
+
+def reviewer_reject(db: MySQLCursorPrepared):
+	pass
+
+
+def reviewer_accept(db: MySQLCursorPrepared):
+	pass
+
+
+def reviewer_resign(db: MySQLCursorPrepared):
+	pass
+
+
+def cleanup(conn, db):
 	try:
 		db.close()
 		conn.close()
