@@ -89,26 +89,28 @@ def user_auth(db):
 			if user_type == 'author':
 				user = user_get(db, command[1], 'author')
 				print(f"Hello, {user['fname']} {user['lname']} @ {user['email']}!")
-				
-				# TODO: WTF is the 'status' command?
+				author_status(db, user['id'])
 				
 				return command[1], 'author'
 			elif user_type == 'editor':
 				user = user_get(db, command[1], 'editor')
 				print(f"Hello, {user['fname']} {user['lname']}!")
-				
-				# TODO: WTF is the 'status' command?
+				editor_status(db)
 				
 				return command[1], 'editor'
 			elif user_type == 'reviewer':
 				user = user_get(db, command[1], 'reviewer')
 				print(f"Hello, {user['fname']} {user['lname']}!")
-				
-				# TODO: wtf is the 'status' command?
+				reviewer_status(db, user['id'])
 				
 				return command[1], 'reviewer'
 		else:
 			print('You must register or login first! ' + errmsg)
+
+
+def db_print(db: MySQLCursorPrepared):
+	for row in db:
+		print("".join(["{:<12}".format(col) for col in row]))
 
 
 def user_register(db: MySQLCursorPrepared, user_type):
@@ -123,20 +125,24 @@ def user_get(db: MySQLCursorPrepared, user_id, user_type):
 	return db.fetchone()
 
 
+# TODO: need to figure out Affiliation
 def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
 	user_id = user_register(db, 'author')
-	# TODO: affiliation
 	db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)',
 	           (user_id, fname.title(), lname.title(), email, affiliation))
 	
 	return user_id
 
 
+def author_status(db: MySQLCursorPrepared, user_id):
+	"""produces a report of all the author’s manuscripts currently in the system where he/she
+	is the primary author. Only the most recent status timesstamp is kept and reported."""
+	db.execute('SELECT * FROM LeadAuthorManuscripts WHERE author_id = ?', (user_id))
+	db_print(db)
+
+
+# TODO: need to figure out Affiliation and Author4
 def author_submit(db: MySQLCursorPrepared):
-	pass
-
-
-def author_status(db: MySQLCursorPrepared):
 	pass
 
 
@@ -149,7 +155,9 @@ def editor_register(db: MySQLCursorPrepared, fname, lname):
 
 
 def editor_status(db: MySQLCursorPrepared):
-	pass
+	"""lists all manuscripts by all authors in the system sorted by status and then manuscript #."""
+	db.execute('SELECT * FROM Manuscript ORDER BY man_status, id')
+	db_print(db)
 
 
 def editor_assign(db: MySQLCursorPrepared):
@@ -180,6 +188,11 @@ def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 		db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', (user_id, icode))
 	
 	return user_id
+
+
+def reviewer_status(db: MySQLCursorPrepared, user_id):
+	"""a listing of all the manuscripts assigned to reviewer,
+	sorted by their status from under review through accepted/rejected."""
 
 
 def reviewer_reject(db: MySQLCursorPrepared):
