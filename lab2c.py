@@ -14,7 +14,6 @@ DATABASE = "mattp_db"
 QUERY = "SELECT * FROM Editor"
 
 
-
 def start():
     initial = "null"
     
@@ -27,7 +26,7 @@ def start():
             register(initial)
 
     
-#get stdinput   
+#get stdin   
 def parse_input():
     print("Please enter your username and password or 'quit' to quit: " )
     lines = sys.stdin.readline()
@@ -46,7 +45,7 @@ def register(input_message):
     values = []
     pre_table = input_message[1].upper()
     
-    values.append(pre_table[0]+input_message[1][1:])
+    values.append(pre_table[0]+input_message[1][1:].lower())
     
     #parse out all other entries
     for x in range(2, len(input_message)):
