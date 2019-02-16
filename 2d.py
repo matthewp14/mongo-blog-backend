@@ -205,8 +205,9 @@ def db_print(db: MySQLCursorPrepared):
 
 def user_register(db: MySQLCursorPrepared, user_type):
 	db.execute('INSERT INTO Users (user_type) VALUES (?)', (user_type))
+	db.execute('SELECT LAST_INSERT_ID()')
 	
-	return db.fetchone()['id']
+	return db.fetchone()
 
 
 def user_get(db: MySQLCursorPrepared, user_id, user_type):
