@@ -126,12 +126,12 @@ def author_main(db: MySQLCursorPrepared, user_id):
 			
 			author_status(db, user_id)
 		elif command[0] == 'submit':
-			if len(command) < 4 or len(command) > 7:
-				print('usage: submit <title> <Affiliation> <ICode> <author2> <author3> <author4>'
+			if len(command) < 4:
+				print('usage: submit <title> <Affiliation> <ICode> [<author2> [<author3> [...]]]'
 				      ' <filename>')
 				continue
 			
-			# TODO
+			author_submit(db, user_id, command[2], command[1], command[3], command[4:-1], command[:-1])
 		else:
 			print(errmsg)
 
@@ -144,7 +144,7 @@ def editor_main(db: MySQLCursorPrepared, user_id):
 				print('usage: status')
 				continue
 			
-			editor_status(db)
+			editor_status(db, user_id)
 		elif command[0] == 'assign':
 			if len(command) != 3:
 				print('usage: assign <manuscriptid> <reviewer_id>')
@@ -187,13 +187,15 @@ def reviewer_main(db: MySQLCursorPrepared, user_id):
 				print('usage: reject manuscriptid a_score c_score m_score e_score')
 				continue
 			
-			reviewer_review(db, 'reject', command[1], command[2], command[3], command[4], command[5])
+			reviewer_review(db, 'reject', user_id,
+			                command[1], command[2], command[3], command[4], command[5])
 		elif command[0] == 'accept':
 			if len(command) != 6:
 				print('usage: accept manuscriptid a_score c_score m_score e_score')
 				continue
 			
-			reviewer_review(db, 'accept', command[1], command[2], command[3], command[4], command[5])
+			reviewer_review(db, 'accept', user_id,
+			                command[1], command[2], command[3], command[4], command[5])
 		else:
 			print(errmsg)
 
@@ -216,7 +218,6 @@ def user_get(db: MySQLCursorPrepared, user_id, user_type):
 	return db.fetchone()
 
 
-# TODO: need to figure out Affiliation
 def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
 	user_id = user_register(db, 'author')
 	db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)',
@@ -233,6 +234,7 @@ def author_status(db: MySQLCursorPrepared, user_id):
 
 
 def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, authors, filename):
+	# TODO: read the filename into a BLOB!
 	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
 	           'VALUES (?, ?, CURDATE(), ?)', (title.title(), filename, icode))
 	man_id = db.execute('SELECT LAST_INSERT_ID()')
@@ -256,9 +258,9 @@ def editor_register(db: MySQLCursorPrepared, fname, lname):
 	return user_id
 
 
-def editor_status(db: MySQLCursorPrepared):
+def editor_status(db: MySQLCursorPrepared, user_id):
 	"""lists all manuscripts by all authors in the system sorted by status and then manuscript #."""
-	db.execute('SELECT * FROM Manuscript ORDER BY man_status, id')
+	db.execute('SELECT * FROM Manuscript WHERE editor_id = ? ORDER BY man_status, id', (user_id))
 	db_print(db)
 
 
@@ -306,10 +308,10 @@ def reviewer_status(db: MySQLCursorPrepared, user_id):
 	db_print(db)
 
 
-def reviewer_review(db: MySQLCursorPrepared, status, man_id, a_score, c_score, m_score, e_score):
+def reviewer_review(db: MySQLCursorPrepared, status, user_id, man_id, a_score, c_score, m_score, e_score):
 	db.execute('UPDATE Feedback SET A_score = ?, C_score = ?, M_score = ?, E_score = ?,'
-	           'recommendation = ? WHERE manuscript_id = ?',
-	           (a_score, c_score, m_score, e_score, status, man_id))
+	           'recommendation = ? WHERE manuscript_id = ? AND reviewer_id = ?',
+	           (a_score, c_score, m_score, e_score, status, man_id, user_id))
 
 
 def reviewer_resign(db: MySQLCursorPrepared, user_id):
