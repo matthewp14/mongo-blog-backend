@@ -84,7 +84,9 @@ CREATE TRIGGER ManStatusUpdate
   ON Manuscript
   FOR EACH ROW
 BEGIN
-  SET NEW.status_last_updated = CURDATE();
+  IF OLD.man_status != NEW.man_status THEN
+    SET NEW.status_last_updated = CURDATE();
+  END IF;
 END$$
 DELIMITER ;
 
