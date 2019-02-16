@@ -317,16 +317,34 @@ def editor_accept(db: MySQLCursorPrepared, man_id):
 		db.excute('UPDATE Manuscript SET man_status = "accepted" WHERE id = ?', (man_id))
 
 """
-editor_schedule: 
+editor_schedule: updates manuscript to 'sceduled' if its status is ready and the addition would not exceed 100 pages for the issue
 """
 def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
-	pass
+	db.execute('SELECT SUM(PAGES) FROM Manuscript JOIN Accepted on id = manuscript_id WHERE journal_id = ?',(issue))
+    total_pages = db.fetchone()
+    db.execute('SELECT pages FROM Manuscript WHERE id = ?',(man_id))
+    added_pages = db.fetchone()
+    
+    db.execute('SELECT man_status from Manuscript WHERE id = ?', (man_id))
+    
+    if db.fetchone() != 'ready':
+        print('The manuscripts must be ready to be published')
+    elif total_pages + added_pages> 100:
+        print('The page count is exceeded for this issue')
+    else:
+        db.execute('UPDATE Manuscript SET man_status = "scheduled" WHERE id = ?',(man_id))
+        """ TODO NEED TO FIGURE OUT ORDERING FOR ACCEPTED TABLE""" 
+        
 
 """
-editor_publish: 
+editor_publish: sets all manuscripts in the issue to 'published' assuming at least one manuscript is scheduled for the issue
 """
 def editor_publish(db: MySQLCursorPrepared, issue):
-	pass
+	db.execute('SELECT COUNT(*) FROM Accepted WHERE journal_id = ?', (issue))
+    if db.fetchone() < 1:
+        print("The journal has no scheduled manuscripts")
+    else:
+        db.execute('UPDATE Manuscript JOIN Accepted on id = manuscript_id SET man_status = "Published" WHERE journal_id = ?', (issue))
 
 """
 reviewer_register: inserts a new user into the user table and then adds the user into the 
