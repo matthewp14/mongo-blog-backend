@@ -123,10 +123,15 @@ def author_main(db: MySQLCursorPrepared, user_id):
 			if len(command) != 1:
 				print('usage: status')
 				continue
+			
+			author_status(db, user_id)
 		elif command[0] == 'submit':
 			if len(command) < 4 or len(command) > 7:
-				print('usage: submit <title> <Affiliation> <ICode> <author2> <author3> <author4> <filename>')
+				print('usage: submit <title> <Affiliation> <ICode> <author2> <author3> <author4>'
+				      ' <filename>')
 				continue
+			
+			# TODO
 		else:
 			print(errmsg)
 
@@ -138,26 +143,38 @@ def editor_main(db: MySQLCursorPrepared, user_id):
 			if len(command) != 1:
 				print('usage: status')
 				continue
+			
+			editor_status(db)
 		elif command[0] == 'assign':
 			if len(command) != 3:
 				print('usage: assign <manuscriptid> <reviewer_id>')
 				continue
+			
+			editor_assign(db, command[1], command[2])
 		elif command[0] == 'reject':
 			if len(command) != 2:
 				print('usage: reject <manuscriptid>')
 				continue
+			
+			editor_reject(db, command[1])
 		elif command[0] == 'accept':
 			if len(command) != 2:
 				print('usage: accept <manuscriptid>')
 				continue
+			
+			editor_accept(db, command[1])
 		elif command[0] == 'schedule':
 			if len(command) != 3:
 				print('usage: schedule <manuscriptid> <issue>')
 				continue
+			
+			editor_schedule(db, command[1], command[2])
 		elif command[0] == 'publish':
 			if len(command) != 2:
 				print('usage: publish <issue>')
 				continue
+			
+			editor_publish(db, command[1])
 		else:
 			print(errmsg)
 
@@ -169,10 +186,14 @@ def reviewer_main(db: MySQLCursorPrepared, user_id):
 			if len(command) != 6:
 				print('usage: reject manuscriptid a_score c_score m_score e_score')
 				continue
+			
+			reviewer_review(db, 'reject', command[1], command[2], command[3], command[4], command[5])
 		elif command[0] == 'accept':
 			if len(command) != 6:
 				print('usage: accept manuscriptid a_score c_score m_score e_score')
 				continue
+			
+			reviewer_review(db, 'accept', command[1], command[2], command[3], command[4], command[5])
 		else:
 			print(errmsg)
 
@@ -247,11 +268,11 @@ def editor_accept(db: MySQLCursorPrepared, man_id):
 		db.excute('UPDATE Manuscript SET man_status = "accepted" WHERE id = ?', (man_id))
 
 
-def editor_schedule(db: MySQLCursorPrepared):
+def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
 	pass
 
 
-def editor_publish(db: MySQLCursorPrepared):
+def editor_publish(db: MySQLCursorPrepared, issue):
 	pass
 
 
@@ -270,29 +291,14 @@ def reviewer_status(db: MySQLCursorPrepared, user_id):
 	sorted by their status from under review through accepted/rejected."""
 
 
-def reviewer_reject(db: MySQLCursorPrepared, man_id, a_score, c_score, m_score, e_score):
+def reviewer_review(db: MySQLCursorPrepared, status, man_id, a_score, c_score, m_score, e_score):
 	db.execute('UPDATE Feedback SET A_score = ?, C_score = ?, M_score = ?, E_score = ?,'
-	           'recommendation = "reject" WHERE manuscript_id = ?',
-	           (a_score, c_score, m_score, e_score, man_id))
+	           'recommendation = ? WHERE manuscript_id = ?',
+	           (a_score, c_score, m_score, e_score, status, man_id))
 
 
-def reviewer_accept(db: MySQLCursorPrepared, man_id, a_score, c_score, m_score, e_score):
-	db.execute('UPDATE Feedback SET A_score = ?, C_score = ?, M_score = ?, E_score = ?,'
-	           'recommendation = "accept" WHERE manuscript_id = ?',
-	           (a_score, c_score, m_score, e_score, man_id))
-
-
-<<<<<<< HEAD
-
-def reviewer_resign(db: MySQLCursorPrepared, reviewer_id):
-	db.execute('DELETE FROM USERS WHERE id = ?', (reviewer_id))
-    print("Thank you for your service.")
-
-
-=======
 def reviewer_resign(db: MySQLCursorPrepared, user_id):
 	db.execute('DELETE FROM Users WHERE id = ?', (user_id))
->>>>>>> 6ca87171c78353bec55a2c6bd4b3bb372cab067e
 
 
 def cleanup(conn, db):
