@@ -41,11 +41,11 @@ def connect(credentials):
 
 
 """we're assuming you ran all of the .sql files necessary"""
+errmsg = 'Refer to https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202 for usage.'
 
 
 def user_auth(db):
 	"""Step 1. register or login"""
-	errmsg = 'Refer to https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202 for usage.'
 	while True:
 		command = input().split()
 		if command[0] == 'register':
@@ -68,11 +68,11 @@ def user_auth(db):
 				
 				return user_id, 'editor'
 			elif command[1] == 'reviewer':
-				if len(command) != 7:
-					print('usage: register reviewer <fname> <lname> <ICode 1> <ICode 2> <ICode 3>')
+				if len(command) < 5 or len(command) > 7:
+					print('usage: register reviewer <fname> <lname> <ICode 1> [<ICode 2> [<ICode 3>]]')
 					continue
 				
-				user_id = reviewer_register(db, command[2], command[3], command[4:6])
+				user_id = reviewer_register(db, command[2], command[3], command[4:])
 				print(f'Your id is {user_id}. Write it down somewhere.')
 				
 				return user_id, 'reviewer'
@@ -104,8 +104,77 @@ def user_auth(db):
 				reviewer_status(db, user['id'])
 				
 				return command[1], 'reviewer'
+		elif command[0] == 'resign':
+			if len(command) != 1:
+				print('usage: resign')
+				continue
+			
+			user_id = input('Enter your user id: ')
+			reviewer_resign(db, user_id)
+			print('Thank you for your service.')
 		else:
 			print('You must register or login first! ' + errmsg)
+
+
+def author_main(db: MySQLCursorPrepared, user_id):
+	while True:
+		command = input().split()
+		if command[0] == 'status':
+			if len(command) != 1:
+				print('usage: status')
+				continue
+		elif command[0] == 'submit':
+			if len(command) < 4 or len(command) > 7:
+				print('usage: submit <title> <Affiliation> <ICode> <author2> <author3> <author4> <filename>')
+				continue
+		else:
+			print(errmsg)
+
+
+def editor_main(db: MySQLCursorPrepared, user_id):
+	while True:
+		command = input().split()
+		if command[0] == 'status':
+			if len(command) != 1:
+				print('usage: status')
+				continue
+		elif command[0] == 'assign':
+			if len(command) != 3:
+				print('usage: assign <manuscriptid> <reviewer_id>')
+				continue
+		elif command[0] == 'reject':
+			if len(command) != 2:
+				print('usage: reject <manuscriptid>')
+				continue
+		elif command[0] == 'accept':
+			if len(command) != 2:
+				print('usage: accept <manuscriptid>')
+				continue
+		elif command[0] == 'schedule':
+			if len(command) != 3:
+				print('usage: schedule <manuscriptid> <issue>')
+				continue
+		elif command[0] == 'publish':
+			if len(command) != 2:
+				print('usage: publish <issue>')
+				continue
+		else:
+			print(errmsg)
+
+
+def reviewer_main(db: MySQLCursorPrepared, user_id):
+	while True:
+		command = input().split()
+		if command[0] == 'reject':
+			if len(command) != 6:
+				print('usage: reject manuscriptid a_score c_score m_score e_score')
+				continue
+		elif command[0] == 'accept':
+			if len(command) != 6:
+				print('usage: accept manuscriptid a_score c_score m_score e_score')
+				continue
+		else:
+			print(errmsg)
 
 
 def db_print(db: MySQLCursorPrepared):
@@ -203,7 +272,7 @@ def reviewer_accept(db: MySQLCursorPrepared):
 	pass
 
 
-def reviewer_resign(db: MySQLCursorPrepared):
+def reviewer_resign(db: MySQLCursorPrepared, user_id):
 	pass
 
 
@@ -219,4 +288,5 @@ if __name__ == '__main__':
 	credentials = config()
 	conn, db = connect(credentials)
 	user_id, user_type = user_auth(db)
+	globals()[f'{user_type}_main'](db, user_id)
 	cleanup(db, conn)
