@@ -160,20 +160,20 @@ def editor_status(db: MySQLCursorPrepared):
 	db_print(db)
 
 
-def editor_assign(db: MySQLCursorPrepared):
-	pass
+def editor_assign(db: MySQLCursorPrepared, manuscript_id, reviewer_id):
+	db.execute('INSERT INTO Feedback (manuscript_id, reviewer_id) VALUES (?,?)', (manuscript_id, reviewer_id))
+    
+
+def editor_reject(db: MySQLCursorPrepared, man_id):
+	db.excute('UPDATE Manuscript SET man_status = ?, status_last_update = CURDATE() WHERE id = ?)', ("rejected",man_id))
 
 
-def editor_reject(db: MySQLCursorPrepared):
-	pass
-
-
-def editor_accept(db: MySQLCursorPrepared):
-	pass
+def editor_accept(db: MySQLCursorPrepared, man_id):
+	db.excute('UPDATE Manuscript SET man_status = ?, status_last_update = CURDATE() WHERE id = ?)', ("accepted",man_id))
 
 
 def editor_schedule(db: MySQLCursorPrepared):
-	pass
+	
 
 
 def editor_publish(db: MySQLCursorPrepared):
@@ -193,18 +193,23 @@ def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 def reviewer_status(db: MySQLCursorPrepared, user_id):
 	"""a listing of all the manuscripts assigned to reviewer,
 	sorted by their status from under review through accepted/rejected."""
+    
 
 
-def reviewer_reject(db: MySQLCursorPrepared):
-	pass
+def reviewer_reject(db: MySQLCursorPrepared,ascore,cscore,mscore,escore):
+    db.execute('UPDATE Feedback SET ascore = ?, cscore = ?, mscore = ? escore = ?,recommendation = ?, recommendation_date = CURDATE())', 
+              (ascore,cscore,mscore,escore,"reject"))
+	
 
 
-def reviewer_accept(db: MySQLCursorPrepared):
-	pass
+def reviewer_accept(db: MySQLCursorPrepared,ascore,cscore,mscore,escore):
+	 db.execute('UPDATE Feedback SET ascore = ?, cscore = ?, mscore = ? escore = ?,recommendation = ?, recommendation_date = CURDATE())', 
+              (ascore,cscore,mscore,escore,"accept"))
 
 
-def reviewer_resign(db: MySQLCursorPrepared):
-	pass
+def reviewer_resign(db: MySQLCursorPrepared, reviewer_id):
+	db.execute('DELETE FROM USERS WHERE id = ?', (reviewer_id))
+    print("Thank you for your service.")
 
 
 def cleanup(conn, db):
