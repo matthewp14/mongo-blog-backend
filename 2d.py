@@ -232,25 +232,20 @@ def author_status(db: MySQLCursorPrepared, user_id):
 	db_print(db)
 
 
-# TODO: need to figure out Affiliation and Author4
-def author_submit(db: MySQLCursorPrepared, author_id,org_name,title, icode, authors, filename):
-    
-	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id) VALUES (?,?,?,?)',(title.title(), filename,'CURDATE()',icode))
-    
-    man_id = db.execute('SELECT_LAST_INSERT_ID()')
-    
-    db.execute('INSERT INTO Oranizations (org_name) VALUES (?)', (org_name))
-    
-    org_id = db.execute('SELECT_LAST_INSERT_ID()')
-    
-    db.execute('INSERT INTO Authorship VALUES (?,?,?)',(man_id,author_id,1))
-    # NOTE: We are assuming that the authors listed are listed by their ids
-    i = 2
-    for author in authors:
-        
-        db.execute('INSERT INTO Authorship (manuscript_id, author_id, author_order) VALUES (?,?,?)',
-                   (man_id,author,i))
-        i=i+1
+def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, authors, filename):
+	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
+	           'VALUES (?, ?, CURDATE(), ?)', (title.title(), filename, icode))
+	man_id = db.execute('SELECT LAST_INSERT_ID()')
+	
+	db.execute('INSERT INTO Organizations (org_name) VALUES (?)', (org_name))
+	org_id = db.execute('SELECT LAST_INSERT_ID()')
+	db.execute('UPDATE Author SET organization_id = ? WHERE id = ?', (org_id, author_id))
+	
+	db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', (man_id, author_id, 1))
+	i = 2
+	for author in authors:
+		db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', (man_id, author, i))
+		i = i+1
 
 
 def editor_register(db: MySQLCursorPrepared, fname, lname):
@@ -307,34 +302,18 @@ def reviewer_status(db: MySQLCursorPrepared, user_id):
 	"""a listing of all the manuscripts assigned to reviewer,
 	sorted by their status from under review through accepted/rejected."""
 	db.execute('SELECT * FROM Feedback JOIN Manuscript ON manuscript_id = id '
-	           'WHERE reviewer_id = ? ORDER BY man_status')
+	           'WHERE reviewer_id = ? ORDER BY man_status', (user_id))
 	db_print(db)
 
 
 def reviewer_review(db: MySQLCursorPrepared, status, man_id, a_score, c_score, m_score, e_score):
 	db.execute('UPDATE Feedback SET A_score = ?, C_score = ?, M_score = ?, E_score = ?,'
-
-	           'recommendation = "accept" WHERE manuscript_id = ?',
-	           (a_score, c_score, m_score, e_score, man_id))
-
-
-def reviewer_resign(db: MySQLCursorPrepared, reviewer_id):
-	db.execute('DELETE FROM USERS WHERE id = ?', (reviewer_id))
-    print("Thank you for your service.")
-
-
-
-def reviewer_resign(db: MySQLCursorPrepared, user_id):
-	db.execute('DELETE FROM Users WHERE id = ?', (user_id))
-
-
 	           'recommendation = ? WHERE manuscript_id = ?',
 	           (a_score, c_score, m_score, e_score, status, man_id))
 
 
 def reviewer_resign(db: MySQLCursorPrepared, user_id):
 	db.execute('DELETE FROM Users WHERE id = ?', (user_id))
-
 
 
 def cleanup(conn, db):
