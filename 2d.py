@@ -187,13 +187,15 @@ def reviewer_main(db: MySQLCursorPrepared, user_id):
 				print('usage: reject manuscriptid a_score c_score m_score e_score')
 				continue
 			
-			reviewer_review(db, 'reject', command[1], command[2], command[3], command[4], command[5])
+			reviewer_review(db, 'reject', user_id,
+			                command[1], command[2], command[3], command[4], command[5])
 		elif command[0] == 'accept':
 			if len(command) != 6:
 				print('usage: accept manuscriptid a_score c_score m_score e_score')
 				continue
 			
-			reviewer_review(db, 'accept', command[1], command[2], command[3], command[4], command[5])
+			reviewer_review(db, 'accept', user_id,
+			                command[1], command[2], command[3], command[4], command[5])
 		else:
 			print(errmsg)
 
@@ -306,10 +308,10 @@ def reviewer_status(db: MySQLCursorPrepared, user_id):
 	db_print(db)
 
 
-def reviewer_review(db: MySQLCursorPrepared, status, man_id, a_score, c_score, m_score, e_score):
+def reviewer_review(db: MySQLCursorPrepared, status, user_id, man_id, a_score, c_score, m_score, e_score):
 	db.execute('UPDATE Feedback SET A_score = ?, C_score = ?, M_score = ?, E_score = ?,'
-	           'recommendation = ? WHERE manuscript_id = ?',
-	           (a_score, c_score, m_score, e_score, status, man_id))
+	           'recommendation = ? WHERE manuscript_id = ? AND reviewer_id = ?',
+	           (a_score, c_score, m_score, e_score, status, man_id, user_id))
 
 
 def reviewer_resign(db: MySQLCursorPrepared, user_id):
