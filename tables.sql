@@ -28,7 +28,7 @@ CREATE TABLE Manuscript
   received_date       DATE         NOT NULL,
   man_status          VARCHAR(45)  NOT NULL DEFAULT ('received'),
   ICode_id            MEDIUMINT    NOT NULL REFERENCES Editor (id),
-  editor_id           INT          NOT NULL REFERENCES RICodes (code),
+  editor_id           INT          REFERENCES RICodes (code),
   pages               INT UNSIGNED,
   status_last_updated DATE
 );
@@ -54,7 +54,7 @@ CREATE TABLE Organizations
 (
   id       INT PRIMARY KEY AUTO_INCREMENT,
   org_name VARCHAR(45) NOT NULL,
-  type_org VARCHAR(45) NOT NULL
+  type_org VARCHAR(45) 
 );
 
 CREATE TABLE Reviewer

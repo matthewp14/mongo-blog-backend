@@ -211,8 +211,24 @@ def author_status(db: MySQLCursorPrepared, user_id):
 
 
 # TODO: need to figure out Affiliation and Author4
-def author_submit(db: MySQLCursorPrepared):
-	pass
+def author_submit(db: MySQLCursorPrepared, author_id,org_name,title, icode, authors, filename):
+    
+	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id) VALUES (?,?,?,?)',(title.title(), filename,'CURDATE()',icode))
+    
+    man_id = db.execute('SELECT_LAST_INSERT_ID()')
+    
+    db.execute('INSERT INTO Oranizations (org_name) VALUES (?)', (org_name))
+    
+    org_id = db.execute('SELECT_LAST_INSERT_ID()')
+    
+    db.execute('INSERT INTO Authorship VALUES (?,?,?)',(man_id,author_id,1))
+    # NOTE: We are assuming that the authors listed are listed by their ids
+    i = 2
+    for author in authors:
+        
+        db.execute('INSERT INTO Authorship (manuscript_id, author_id, author_order) VALUES (?,?,?)',
+                   (man_id,author,i))
+        i=i+1
 
 
 def editor_register(db: MySQLCursorPrepared, fname, lname):
@@ -282,17 +298,15 @@ def reviewer_accept(db: MySQLCursorPrepared, man_id, a_score, c_score, m_score, 
 	           (a_score, c_score, m_score, e_score, man_id))
 
 
-<<<<<<< HEAD
-
 def reviewer_resign(db: MySQLCursorPrepared, reviewer_id):
 	db.execute('DELETE FROM USERS WHERE id = ?', (reviewer_id))
     print("Thank you for your service.")
 
 
-=======
+
 def reviewer_resign(db: MySQLCursorPrepared, user_id):
 	db.execute('DELETE FROM Users WHERE id = ?', (user_id))
->>>>>>> 6ca87171c78353bec55a2c6bd4b3bb372cab067e
+
 
 
 def cleanup(conn, db):
