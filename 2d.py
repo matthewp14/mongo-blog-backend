@@ -126,12 +126,12 @@ def author_main(db: MySQLCursorPrepared, user_id):
 			
 			author_status(db, user_id)
 		elif command[0] == 'submit':
-			if len(command) < 4 or len(command) > 7:
-				print('usage: submit <title> <Affiliation> <ICode> <author2> <author3> <author4>'
+			if len(command) < 4:
+				print('usage: submit <title> <Affiliation> <ICode> [<author2> [<author3> [...]]]'
 				      ' <filename>')
 				continue
 			
-			# TODO
+			author_submit(db, user_id, command[2], command[1], command[3], command[4:-1], command[:-1])
 		else:
 			print(errmsg)
 
@@ -218,7 +218,6 @@ def user_get(db: MySQLCursorPrepared, user_id, user_type):
 	return db.fetchone()
 
 
-# TODO: need to figure out Affiliation
 def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
 	user_id = user_register(db, 'author')
 	db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)',
@@ -235,6 +234,7 @@ def author_status(db: MySQLCursorPrepared, user_id):
 
 
 def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, authors, filename):
+	# TODO: read the filename into a BLOB!
 	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
 	           'VALUES (?, ?, CURDATE(), ?)', (title.title(), filename, icode))
 	man_id = db.execute('SELECT LAST_INSERT_ID()')
