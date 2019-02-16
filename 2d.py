@@ -281,8 +281,6 @@ def reviewer_resign(db: MySQLCursorPrepared, reviewer_id):
 	db.execute('DELETE FROM USERS WHERE id = ?', (reviewer_id))
     print("Thank you for your service.")
 
-def reviewer_resign(db: MySQLCursorPrepared, user_id):
-	pass
 
 
 
