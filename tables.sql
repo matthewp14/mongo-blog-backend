@@ -29,7 +29,7 @@ CREATE TABLE Manuscript
   man_status          VARCHAR(45)  NOT NULL DEFAULT ('received'),
   ICode_id            MEDIUMINT    NOT NULL REFERENCES Editor (id),
   editor_id           INT          NOT NULL REFERENCES RICodes (code),
-  pages               INT UNSIGNED NOT NULL,
+  pages               INT UNSIGNED,
   status_last_updated DATE
 );
 
