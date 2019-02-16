@@ -1,8 +1,8 @@
-### LAB 2d Font-End Application 
+# LAB 2d Font-End Application 
 
 ## Matthew Parker and Sungil Ahn
 
-# General File Structure 2d.py
+### General File Structure 2d.py
 
 The file is broken into the follwing segments: 
 
@@ -16,5 +16,5 @@ The file then determines if the command is a 'login' or 'register' command. For 
 
 When the user has logged out of the database, the file closes all connections and then terminates.
 
-# Assumptions
+### Assumptions
 It is assumed that all of the .sql files from Lab2c have been run prior to running the front end application. 
