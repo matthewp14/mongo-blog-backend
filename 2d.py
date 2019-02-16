@@ -290,6 +290,9 @@ def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 def reviewer_status(db: MySQLCursorPrepared, user_id):
 	"""a listing of all the manuscripts assigned to reviewer,
 	sorted by their status from under review through accepted/rejected."""
+	db.execute('SELECT * FROM Feedback JOIN Manuscript ON manuscript_id = id '
+	           'WHERE reviewer_id = ? ORDER BY man_status')
+	db_print(db)
 
 
 def reviewer_review(db: MySQLCursorPrepared, status, man_id, a_score, c_score, m_score, e_score):
