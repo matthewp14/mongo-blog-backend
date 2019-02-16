@@ -144,7 +144,7 @@ def editor_main(db: MySQLCursorPrepared, user_id):
 				print('usage: status')
 				continue
 			
-			editor_status(db)
+			editor_status(db, user_id)
 		elif command[0] == 'assign':
 			if len(command) != 3:
 				print('usage: assign <manuscriptid> <reviewer_id>')
@@ -258,9 +258,9 @@ def editor_register(db: MySQLCursorPrepared, fname, lname):
 	return user_id
 
 
-def editor_status(db: MySQLCursorPrepared):
+def editor_status(db: MySQLCursorPrepared, user_id):
 	"""lists all manuscripts by all authors in the system sorted by status and then manuscript #."""
-	db.execute('SELECT * FROM Manuscript ORDER BY man_status, id')
+	db.execute('SELECT * FROM Manuscript WHERE editor_id = ? ORDER BY man_status, id', (user_id))
 	db_print(db)
 
 
