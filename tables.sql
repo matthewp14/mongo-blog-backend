@@ -20,6 +20,12 @@ DROP TABLE IF EXISTS Users;
 -- TABLE CREATION 
 -- ------------------------------------
 
+CREATE TABLE Users
+(
+  id        INT PRIMARY KEY AUTO_INCREMENT,
+  user_type VARCHAR(8) NOT NULL
+);
+
 CREATE TABLE Manuscript
 (
   id                  INT PRIMARY KEY AUTO_INCREMENT,
@@ -59,7 +65,7 @@ CREATE TABLE Organizations
 
 CREATE TABLE Reviewer
 (
-  id              INT PRIMARY KEY,
+  id              INT NOT NULL UNIQUE,
   fname           VARCHAR(45) NOT NULL,
   lname           VARCHAR(45) NOT NULL,
   email           VARCHAR(45),
@@ -121,10 +127,4 @@ CREATE TABLE RICodes
   code     MEDIUMINT   NOT NULL AUTO_INCREMENT,
   interest varchar(64) NOT NULL,
   PRIMARY KEY (code)
-);
-
-CREATE TABLE Users
-(
-  id        INT PRIMARY KEY AUTO_INCREMENT,
-  user_type VARCHAR(8) NOT NULL
 );
