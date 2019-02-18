@@ -30,14 +30,15 @@ The user is then prompted to either login or register. Please see
 `https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202/` for all details about the specific command syntax.
 
 An example of Login and Register: 
-`register author fname lname email affiliation`
-`login user_id`
+1. `register author fname lname email affiliation`
+2. `login user_id`
 
 Once the user is logged in, they are able to call the commands pertaining to their specific role. 
 
 An example of Reviewer commands: 
-`reject man_id ascore cscore mscore escore`
-`accept man_id ascore cscore mscore escore`
+
+1. `reject man_id ascore cscore mscore escore`
+2. `accept man_id ascore cscore mscore escore`
 
 #### General note on usage: 
 The application does not support multiple user interaction. In other words, only one user is able to access the database upon the launch of the file and should another user with to register or login they must kill the file and launch it again. So if you wish to register multiple users you will have to run this file multiple times.
