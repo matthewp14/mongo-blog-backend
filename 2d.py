@@ -260,8 +260,11 @@ Author_register: Inserts a new Author into the Author table and returns the id
 
 def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
 	user_id = user_register(db, 'author')
+	db.execute('INSERT INTO Organizations (org_name) VALUES (?)', [affiliation])
+	db.execute('SELECT LAST_INSERT_ID()')
+	org_id = db.fetchone()[0]
 	db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)',
-	           [user_id, fname.title(), lname.title(), email, affiliation])
+	           [user_id, fname.title(), lname.title(), email, org_id])
 	
 	return user_id
 
