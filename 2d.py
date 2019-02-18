@@ -234,7 +234,7 @@ def user_register(db: MySQLCursorPrepared, user_type):
 	db.execute('INSERT INTO Users (user_type) VALUES (?)', [user_type])
 	db.execute('SELECT LAST_INSERT_ID()')
 	
-	return db.fetchone()
+	return db.fetchone()[0]
 
 
 """
@@ -340,7 +340,7 @@ editor_accept: updates the manuscript status to 'accepted' only if the manuscrip
 def editor_accept(db: MySQLCursorPrepared, man_id):
 	db.execute('SELECT COUNT(*) FROM Feedback WHERE manuscript_id = ? AND recommendation IS NOT NULL',
 	           [man_id])
-	if db.fetchone() < 3:
+	if db.fetchone()[0] < 3:
 		print('Manuscript MUST have at least three completed reviews!')
 	else:
 		db.excute('UPDATE Manuscript SET man_status = "accepted" WHERE id = ?', [man_id])
@@ -354,21 +354,21 @@ editor_schedule: updates manuscript to 'sceduled' if its status is ready and the
 def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
 	db.execute('SELECT SUM(pages) FROM Manuscript JOIN Accepted on id = manuscript_id '
 	           'WHERE journal_id = ?', [issue])
-	total_pages = db.fetchone()
+	total_pages = db.fetchone()[0]
 	
 	db.execute('SELECT pages FROM Manuscript WHERE id = ?', [man_id])
-	added_pages = db.fetchone()
+	added_pages = db.fetchone()['pages']
 	
 	db.execute('SELECT man_status from Manuscript WHERE id = ?', [man_id])
 	
-	if db.fetchone() != 'ready':
+	if db.fetchone()['man_status'] != 'ready':
 		print('The manuscripts must be ready to be published')
 	elif total_pages + added_pages > 100:
 		print('The page count is exceeded for this issue')
 	else:
 		db.execute('UPDATE Manuscript SET man_status = "scheduled" WHERE id = ?', [man_id])
 		db.execute('SELECT MAX(man_order) FROM Accepted WHERE journal_id = ?', [issue])
-		order = db.fetchone() or 0
+		order = db.fetchone()[0] or 0
 		db.execute('INSERT INTO Accepted VALUES (?, ?, ?, ?, CURDATE())',
 		           [man_id, issue, order, total_pages + 1])
 
@@ -379,7 +379,7 @@ editor_publish: sets all manuscripts in the issue to 'published' assuming at lea
 
 def editor_publish(db: MySQLCursorPrepared, issue):
 	db.execute('SELECT COUNT(*) FROM Accepted WHERE journal_id = ?', [issue])
-	if db.fetchone() < 1:
+	if db.fetchone()[0] < 1:
 		print("The journal has no scheduled manuscripts")
 	else:
 		db.execute(
