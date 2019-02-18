@@ -2,6 +2,7 @@ from configparser import ConfigParser
 from mysql.connector import MySQLConnection, Error, errorcode
 from mysql.connector.cursor import MySQLCursorPrepared
 import sys
+from random import randint
 
 """
 config: reads from the .ini file to generate the database
@@ -237,8 +238,9 @@ def reviewer_main(db: MySQLCursorPrepared, user_id):
 
 # Prints the sql query results
 def db_print(db: MySQLCursorPrepared):
-	for row in db:
-		print("".join(["{:<12}".format(col) for col in row]))
+	rows = db.fetchall()
+	for row in rows:
+		print(row)
 
 
 """
@@ -312,9 +314,9 @@ def author_submit(db: MySQLCursorPrepared, author_id, title, org_name, icode, co
 			txt = f.read()
 	except:
 		return print('Filename is wrong!')
-	
-	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
-	           'VALUES (?, ?, CURDATE(), ?)', [title.title(), txt, icode])
+	x = randint(10, 30)
+	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id, pages)'
+	           'VALUES (?, ?, CURDATE(), ?,?)', [title.title(), txt, icode, x])
 	db.execute('SELECT LAST_INSERT_ID()')
 	man_id = db.fetchone()[0]
 	
@@ -330,13 +332,14 @@ def author_submit(db: MySQLCursorPrepared, author_id, title, org_name, icode, co
 	for i in range(0, len(coauthors), 2):
 		db.execute('SELECT id FROM Author WHERE fname = ? AND lname = ?',
 		           [coauthors[i], coauthors[i + 1]])
-		co_id = db.fetchone()[0]
+		result = db.fetchone()
+		co_id = result[0] if result else None
 		if not co_id:
 			co_id = coauthor_register(db, coauthors[i], coauthors[i + 1], org_id)
 		authors.append(co_id)
 	
 	for i in range(len(authors)):
-		db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', [man_id, authors[i], i])
+		db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', [man_id, authors[i], i + 1])
 
 
 """
@@ -355,7 +358,7 @@ def editor_register(db: MySQLCursorPrepared, fname, lname):
 
 def editor_status(db: MySQLCursorPrepared, user_id):
 	"""lists all manuscripts by all authors in the system sorted by status and then manuscript #."""
-	db.execute('SELECT * FROM Manuscript WHERE editor_id = ? ORDER BY man_status, id', [user_id])
+	db.execute('SELECT * FROM Manuscript ORDER BY man_status, id')
 	db_print(db)
 
 
@@ -375,7 +378,7 @@ editor_reject: updates the manuscript status to 'rejected' in the Manuscript tab
 
 
 def editor_reject(db: MySQLCursorPrepared, man_id):
-	db.excute('UPDATE Manuscript SET man_status = "rejected" WHERE id = ?', [man_id])
+	db.execute('UPDATE Manuscript SET man_status = "rejected" WHERE id = ?', [man_id])
 
 
 """
@@ -390,7 +393,7 @@ def editor_accept(db: MySQLCursorPrepared, man_id):
 	if db.fetchone()[0] < 3:
 		print('Manuscript MUST have at least three completed reviews!')
 	else:
-		db.excute('UPDATE Manuscript SET man_status = "accepted" WHERE id = ?', [man_id])
+		db.execute('UPDATE Manuscript SET man_status = "accepted" WHERE id = ?', [man_id])
 
 
 """
@@ -399,12 +402,17 @@ editor_schedule: updates manuscript to 'sceduled' if its status is ready and the
 
 
 def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
+	db.execute('SELECT COUNT(*) FROM Journal WHERE journal_id = ?', [issue])
+	if not db.fetchone()[0]:
+		db.execute('INSERT INTO Journal (journal_id, journal_num, journal_year) VALUES (?, ?, ?)',
+		           [issue, int(issue[:4]), int(issue[5])])
+	
 	db.execute('SELECT SUM(pages) FROM Manuscript JOIN Accepted on id = manuscript_id '
 	           'WHERE journal_id = ?', [issue])
-	total_pages = db.fetchone()[0]
+	total_pages = db.fetchone()[0] or 0
 	
 	db.execute('SELECT pages FROM Manuscript WHERE id = ?', [man_id])
-	added_pages = db.fetchone()[0]
+	added_pages = db.fetchone()[0] or 0
 	
 	db.execute('SELECT man_status from Manuscript WHERE id = ?', [man_id])
 	
@@ -415,7 +423,7 @@ def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
 	else:
 		db.execute('UPDATE Manuscript SET man_status = "scheduled" WHERE id = ?', [man_id])
 		db.execute('SELECT MAX(man_order) FROM Accepted WHERE journal_id = ?', [issue])
-		order = db.fetchone()[0] or 0
+		order = db.fetchone()[0] or 1
 		db.execute('INSERT INTO Accepted VALUES (?, ?, ?, ?, CURDATE())',
 		           [man_id, issue, order, total_pages + 1])
 

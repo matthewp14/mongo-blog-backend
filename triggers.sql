@@ -70,7 +70,7 @@ CREATE TRIGGER AcceptedUpdate
   FOR EACH ROW
 BEGIN
   IF NEW.man_status = "accepted" THEN
-    SET NEW.man_status = "typesetting";
+    SET NEW.man_status = "ready";
   END IF;
 END$$
 DELIMITER ;
