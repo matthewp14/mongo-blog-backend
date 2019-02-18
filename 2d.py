@@ -63,6 +63,7 @@ user_auth: parses the initial user input to determine if the command is a
 
 
 def user_auth(db):
+	print('Login or register')
 	"""Step 1. register or login"""
 	while True:
 		command = input().split()
