@@ -63,7 +63,7 @@ user_auth: parses the initial user input to determine if the command is a
 """
 
 
-def user_register(db: MySQLCursorPrepared, command):
+def user_register_menu(db: MySQLCursorPrepared, command):
 	if command[1] == 'author':
 		if len(command) != 6:
 			print('usage: register author <fname> <lname> <email> <affiliation>')
@@ -103,7 +103,7 @@ def user_auth(db: MySQLCursorPrepared):
 	while True:
 		command = input().split()
 		if command[0] == 'register':
-			user_id, user_type = user_register(db, command)
+			user_id, user_type = user_register_menu(db, command)
 			if user_id is None:
 				continue
 		
