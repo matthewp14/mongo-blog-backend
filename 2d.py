@@ -115,7 +115,10 @@ def user_auth(db: MySQLCursorPrepared):
 			user_id = user_id or command[1]
 			
 			db.execute('SELECT * FROM Users WHERE id = ?', [user_id])
-			user_type = db.fetchone()[1]
+			try:
+				user_type = db.fetchone()[1]
+			except:
+				return print('Wrong id!')
 			
 			if user_type == 'author':
 				user = user_get(db, user_id, 'author')
