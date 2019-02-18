@@ -104,7 +104,7 @@ def user_auth(db):
 				continue
 			
 			db.execute('SELECT * FROM Users WHERE id = ?', [command[1]])
-			user_type = db.fetchone()['user_type']
+			user_type = db.fetchone()[1]
 			
 			if user_type == 'author':
 				user = user_get(db, command[1], 'author')
