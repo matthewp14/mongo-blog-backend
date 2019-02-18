@@ -71,7 +71,7 @@ CREATE TABLE Reviewer
   email           VARCHAR(45),
   organization_id INT REFERENCES Organizations (id),
   CONSTRAINT FOREIGN KEY (id) REFERENCES Users (id) ON DELETE CASCADE,
-  CONSTRAINT UNIQUE (fname, lname)
+  UNIQUE KEY (fname, lname)
 );
 
 CREATE TABLE Reviewer_ICode
