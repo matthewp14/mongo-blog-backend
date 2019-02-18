@@ -18,3 +18,5 @@ When the user has logged out of the database, the file closes all connections an
 
 ### Assumptions
 It is assumed that all of the .sql files from Lab2c have been run prior to running the front end application. 
+
+After a 'register' command, the user is automatically logged into the system and given access to their respective commands.
