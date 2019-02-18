@@ -3,13 +3,11 @@
 ## Matthew Parker and Sungil Ahn
 
 ### Database
-The main files for this database are 'tables.sql', 'insert.sql', 'views.sql', 'procedures.sql' and 'triggers.sql'. When the database goes live, the files should be run in this order to ensure that the data is entered correctly. The files indicate the function of each file. For example, 'tables.sql' creates the tables for the database while 'insert.sql' inserts all of the necessary data into the tables.
-
-In addition to these files, there are helper files for the procedure and trigger files to ensure that they are working properly. When testing the procedures and triggers, 'proceduressetup.sql' and 'triggerssetup.sql' should be run first. These files create small tables with test-specific data. Following this, 'procedures.sql' and 'triggers.sql' should be run followed by their respective test files. There are comments within the test files that outline the expected behavior of each query or action on the database. 
+The main files for this database are 'tables.sql', 'insert.sql', 'views.sql', 'procedures.sql' and 'triggers.sql'. When the database goes live, the files should be run in this order to ensure that the data is entered correctly. The files indicate the function of each file. For example, 'tables.sql' creates the tables for the database while 'insert.sql' inserts all of the necessary data into the tables. 
 
 ### File Structure 2d.py
 
-The file is broken into the follwing segments: 
+The file is broken into the following segments: 
 
 - Database connection and configuration
 - General input parsing
@@ -53,7 +51,7 @@ Any 'Affiliation' category is assumed to be the name of the affiliation rather t
 The 'filename' in the author submit command is used to read the file into a MySQL Blob.
 
 ### Implementation Details
-We changed the trigger from lab 2c to automatically update the status of manuscripts to 'ready' when they are set to 'accepted'.
+We changed the trigger from lab 2c to automatically update the status of manuscripts to 'ready' instead of 'typesetting' when they are set to 'accepted', since there is no CLI operation to support typesetting.
 
 The application does not support multiple user interaction. In other words, only one user is able to access the database upon the launch of the file and should another user with to register or login they must kill the file and launch it again. So if you wish to register multiple users you will have to run this file multiple times.
 
