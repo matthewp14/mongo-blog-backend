@@ -299,8 +299,14 @@ author_submit: Inserts a new manuscript into the system. Following this the func
 
 def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, authors, filename):
 	# TODO: read the filename into a BLOB!
+	try:
+		with open(filename, 'rb') as f:
+			txt = f.read()
+	except:
+		return print('Filename is wrong!')
+	
 	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
-	           'VALUES (?, ?, CURDATE(), ?)', [title.title(), filename, icode])
+	           'VALUES (?, ?, CURDATE(), ?)', [title.title(), txt, icode])
 	man_id = db.execute('SELECT LAST_INSERT_ID()')
 	
 	db.execute('INSERT INTO Organizations (org_name) VALUES (?)', [org_name])
