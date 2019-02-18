@@ -99,41 +99,42 @@ def user_register(db: MySQLCursorPrepared, command):
 def user_auth(db: MySQLCursorPrepared):
 	print('Login or register')
 	"""Step 1. register or login"""
-	registered = False
+	user_id = 0
 	while True:
 		command = input().split()
 		if command[0] == 'register':
 			user_id, user_type = user_register(db, command)
 			if user_id is None:
 				continue
-			registered = True
 		
-		if command[0] == 'login' or registered:
-			if not registered and len(command) != 2:
+		if command[0] == 'login' or user_id:
+			if not user_id and len(command) != 2:
 				print('usage: login <id>')
 				continue
 			
-			db.execute('SELECT * FROM Users WHERE id = ?', [command[1]])
+			user_id = user_id or command[1]
+			
+			db.execute('SELECT * FROM Users WHERE id = ?', [user_id])
 			user_type = db.fetchone()[1]
 			
 			if user_type == 'author':
-				user = user_get(db, command[1], 'author')
+				user = user_get(db, user_id, 'author')
 				print(f"Hello, {user[1]} {user[2]} @ {user[3]}!")
 				author_status(db, user[0])
 				
-				return command[1], 'author'
+				return user_id, 'author'
 			elif user_type == 'editor':
-				user = user_get(db, command[1], 'editor')
+				user = user_get(db, user_id, 'editor')
 				print(f"Hello, {user[1]} {user[2]}!")
 				editor_status(db, user[0])
 				
-				return command[1], 'editor'
+				return user_id, 'editor'
 			elif user_type == 'reviewer':
-				user = user_get(db, command[1], 'reviewer')
+				user = user_get(db, user_id, 'reviewer')
 				print(f"Hello, {user[1]} {user[2]}!")
 				reviewer_status(db, user[0])
 				
-				return command[1], 'reviewer'
+				return user_id, 'reviewer'
 		elif command[0] == 'resign':
 			if len(command) != 1:
 				print('usage: resign')
