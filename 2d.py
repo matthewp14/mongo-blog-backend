@@ -405,7 +405,7 @@ def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 		           [user_id, fname.title(), lname.title()])
 	except Error as err:
 		user_delete(db, user_id)
-		print(err.msg)
+		return print(err.msg)
 	for icode in icodes:
 		db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', [user_id, icode])
 	
