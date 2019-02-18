@@ -36,6 +36,7 @@ def connect(credentials):
 	try:
 		conn = MySQLConnection(**credentials)
 		if conn.is_connected():
+			conn.autocommit(True)
 			return conn, conn.cursor(prepared=True)
 		else:
 			print('mysql connection failed.')
