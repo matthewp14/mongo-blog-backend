@@ -104,24 +104,24 @@ def user_auth(db):
 				continue
 			
 			db.execute('SELECT * FROM Users WHERE id = ?', [command[1]])
-			user_type = db.fetchone()['user_type']
+			user_type = db.fetchone()[1]
 			
 			if user_type == 'author':
 				user = user_get(db, command[1], 'author')
-				print(f"Hello, {user['fname']} {user['lname']} @ {user['email']}!")
-				author_status(db, user['id'])
+				print(f"Hello, {user[1]} {user[2]} @ {user[3]}!")
+				author_status(db, user[0])
 				
 				return command[1], 'author'
 			elif user_type == 'editor':
 				user = user_get(db, command[1], 'editor')
-				print(f"Hello, {user['fname']} {user['lname']}!")
-				editor_status(db)
+				print(f"Hello, {user[1]} {user[2]}!")
+				editor_status(db, user[0])
 				
 				return command[1], 'editor'
 			elif user_type == 'reviewer':
 				user = user_get(db, command[1], 'reviewer')
-				print(f"Hello, {user['fname']} {user['lname']}!")
-				reviewer_status(db, user['id'])
+				print(f"Hello, {user[1]} {user[2]}!")
+				reviewer_status(db, user[0])
 				
 				return command[1], 'reviewer'
 		elif command[0] == 'resign':
@@ -362,11 +362,11 @@ def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
 	total_pages = db.fetchone()[0]
 	
 	db.execute('SELECT pages FROM Manuscript WHERE id = ?', [man_id])
-	added_pages = db.fetchone()['pages']
+	added_pages = db.fetchone()[0]
 	
 	db.execute('SELECT man_status from Manuscript WHERE id = ?', [man_id])
 	
-	if db.fetchone()['man_status'] != 'ready':
+	if db.fetchone()[0] != 'ready':
 		print('The manuscripts must be ready to be published')
 	elif total_pages + added_pages > 100:
 		print('The page count is exceeded for this issue')
