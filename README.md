@@ -40,8 +40,7 @@ An example of Reviewer commands:
 1. `reject man_id ascore cscore mscore escore`
 2. `accept man_id ascore cscore mscore escore`
 
-#### General note on usage: 
-The application does not support multiple user interaction. In other words, only one user is able to access the database upon the launch of the file and should another user with to register or login they must kill the file and launch it again. So if you wish to register multiple users you will have to run this file multiple times.
+Please see implementation details for more specific information on usage.
 
 
 ### Assumptions
@@ -52,6 +51,12 @@ After a 'register' command, the user is automatically logged into the system and
 Any 'Affiliation' category is assumed to be the name of the affiliation rather than the ID of the affiliation. 
 
 The 'filename' in the author submit command is used to read the file into a MySQL Blob.
+
+### Implementation Details
+We changed the trigger from lab 2c to automatically update the status of manuscripts to 'ready' when they are set to 'accepted'.
+
+The application does not support multiple user interaction. In other words, only one user is able to access the database upon the launch of the file and should another user with to register or login they must kill the file and launch it again. So if you wish to register multiple users you will have to run this file multiple times.
+
 
 #### Triggers.sql
 In addition to the triggers outlined in the lab description, this file contains two triggers to automatically update the date columns in the Manuscript and Feedback tables. The reason for this is that there are a few instances where we need to keep track of the last update on these tables. 
