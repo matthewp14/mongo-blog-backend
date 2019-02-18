@@ -238,6 +238,10 @@ def user_register(db: MySQLCursorPrepared, user_type):
 	return db.fetchone()[0]
 
 
+def user_delete(db: MySQLCursorPrepared, user_id):
+	db.execute('DELETE FROM Users WHERE id = ?', [user_id])
+
+
 """
 Fetches and returns the user id from the User table
 """
@@ -396,8 +400,12 @@ reviewer_register: inserts a new user into the user table and then adds the user
 
 def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 	user_id = user_register(db, 'reviewer')
-	db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)',
-	           [user_id, fname.title(), lname.title()])
+	try:
+		db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)',
+		           [user_id, fname.title(), lname.title()])
+	except Error as err:
+		user_delete(db, user_id)
+		print(err.msg)
 	for icode in icodes:
 		db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', [user_id, icode])
 	
