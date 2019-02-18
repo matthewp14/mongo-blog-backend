@@ -3,11 +3,12 @@ from mysql.connector import MySQLConnection, Error, errorcode
 from mysql.connector.cursor import MySQLCursorPrepared
 import sys
 
-
 """
 config: reads from the .ini file to generate the database
         configuration. Returns the finialized credentials for login
 """
+
+
 def config(filename='Team32Lab2.ini', section='mysql'):
 	"""read configuration file"""
 	parser = ConfigParser()
@@ -22,11 +23,14 @@ def config(filename='Team32Lab2.ini', section='mysql'):
 	
 	return credentials
 
+
 """
 connect: uses the credentials passed in to establish a connection to the database
          If successful, returns a connection and prepared cursor. Generates erros and exits
          if connection fails
 """
+
+
 def connect(credentials):
 	"""connect to the database"""
 	try:
@@ -51,12 +55,13 @@ def connect(credentials):
 """we're assuming you ran all of the .sql files necessary"""
 errmsg = 'Refer to https://www.cs.dartmouth.edu/~cs61/Labs/Lab%202 for usage.'
 
-
 """
 user_auth: parses the initial user input to determine if the command is a 
            login or register command. Any additional arguments are stored in a 
            list for later use. Errors are generated for incorrect syntax
 """
+
+
 def user_auth(db):
 	"""Step 1. register or login"""
 	while True:
@@ -127,7 +132,6 @@ def user_auth(db):
 			print('Thank you for your service.')
 		else:
 			print('You must register or login first! ' + errmsg)
-
 
 
 def author_main(db: MySQLCursorPrepared, user_id):
@@ -213,6 +217,7 @@ def reviewer_main(db: MySQLCursorPrepared, user_id):
 		else:
 			print(errmsg)
 
+
 # Prints the sql query results
 def db_print(db: MySQLCursorPrepared):
 	for row in db:
@@ -222,23 +227,31 @@ def db_print(db: MySQLCursorPrepared):
 """
 user_register: registers a new user into the database, returns the id of the last added user
 """
+
+
 def user_register(db: MySQLCursorPrepared, user_type):
 	db.execute('INSERT INTO Users (user_type) VALUES (?)', (user_type))
 	db.execute('SELECT LAST_INSERT_ID()')
 	
 	return db.fetchone()
 
+
 """
 Fetches and returns the user id from the User table
 """
+
+
 def user_get(db: MySQLCursorPrepared, user_id, user_type):
 	db.execute(f'SELECT * FROM {user_type.title()} WHERE id = ?', (user_id))
 	
 	return db.fetchone()
 
+
 """
 Author_register: Inserts a new Author into the Author table and returns the id
 """
+
+
 def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
 	user_id = user_register(db, 'author')
 	db.execute('INSERT INTO Author VALUES (?, ?, ?, ?, ?)',
@@ -253,11 +266,14 @@ def author_status(db: MySQLCursorPrepared, user_id):
 	db.execute('SELECT * FROM LeadAuthorManuscripts WHERE author_id = ?', (user_id))
 	db_print(db)
 
+
 """
 author_submit: Inserts a new manuscript into the system. Following this the funciton
                registers all affiliated authors with the manuscript and updates the organization
                of the primary author
 """
+
+
 def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, authors, filename):
 	# TODO: read the filename into a BLOB!
 	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
@@ -272,12 +288,15 @@ def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, au
 	i = 2
 	for author in authors:
 		db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', (man_id, author, i))
-		i = i+1
+		i = i + 1
+
 
 """
 editor_register: inserts a new user and then adds the user to the editor table
                  returns the user_id
 """
+
+
 def editor_register(db: MySQLCursorPrepared, fname, lname):
 	user_id = user_register(db, 'editor')
 	db.execute('INSERT INTO Editor VALUES (?, ?, ?)',
@@ -291,23 +310,32 @@ def editor_status(db: MySQLCursorPrepared, user_id):
 	db.execute('SELECT * FROM Manuscript WHERE editor_id = ? ORDER BY man_status, id', (user_id))
 	db_print(db)
 
+
 """
 editor_assign: assigns the manuscript to a reviwer in the Feedback table
 """
+
+
 def editor_assign(db: MySQLCursorPrepared, manuscript_id, reviewer_id):
 	db.execute('INSERT INTO Feedback (manuscript_id, reviewer_id) VALUES (?, ?)',
 	           (manuscript_id, reviewer_id))
 
+
 """
 editor_reject: updates the manuscript status to 'rejected' in the Manuscript table
 """
+
+
 def editor_reject(db: MySQLCursorPrepared, man_id):
 	db.excute('UPDATE Manuscript SET man_status = "rejected" WHERE id = ?', (man_id))
+
 
 """
 editor_accept: updates the manuscript status to 'accepted' only if the manuscript has at lease
                three reviews in the Feedback table
 """
+
+
 def editor_accept(db: MySQLCursorPrepared, man_id):
 	db.execute('SELECT COUNT(*) FROM Feedback WHERE manuscript_id = ? AND recommendation IS NOT NULL',
 	           (man_id))
@@ -316,41 +344,54 @@ def editor_accept(db: MySQLCursorPrepared, man_id):
 	else:
 		db.excute('UPDATE Manuscript SET man_status = "accepted" WHERE id = ?', (man_id))
 
+
 """
 editor_schedule: updates manuscript to 'sceduled' if its status is ready and the addition would not exceed 100 pages for the issue
 """
+
+
 def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
-	db.execute('SELECT SUM(PAGES) FROM Manuscript JOIN Accepted on id = manuscript_id WHERE journal_id = ?',(issue))
-    total_pages = db.fetchone()
-    db.execute('SELECT pages FROM Manuscript WHERE id = ?',(man_id))
-    added_pages = db.fetchone()
-    
-    db.execute('SELECT man_status from Manuscript WHERE id = ?', (man_id))
-    
-    if db.fetchone() != 'ready':
-        print('The manuscripts must be ready to be published')
-    elif total_pages + added_pages> 100:
-        print('The page count is exceeded for this issue')
-    else:
-        db.execute('UPDATE Manuscript SET man_status = "scheduled" WHERE id = ?',(man_id))
-        """ TODO NEED TO FIGURE OUT ORDERING FOR ACCEPTED TABLE""" 
-        
+	db.execute('SELECT SUM(pages) FROM Manuscript JOIN Accepted on id = manuscript_id '
+	           'WHERE journal_id = ?', (issue))
+	total_pages = db.fetchone()
+	
+	db.execute('SELECT pages FROM Manuscript WHERE id = ?', (man_id))
+	added_pages = db.fetchone()
+	
+	db.execute('SELECT man_status from Manuscript WHERE id = ?', (man_id))
+	
+	if db.fetchone() != 'ready':
+		print('The manuscripts must be ready to be published')
+	elif total_pages + added_pages > 100:
+		print('The page count is exceeded for this issue')
+	else:
+		db.execute('UPDATE Manuscript SET man_status = "scheduled" WHERE id = ?', (man_id))
+		db.execute('SELECT MAX(man_order) FROM Accepted WHERE journal_id = ?', (issue))
+		order = db.fetchone() or 0
+		db.execute('INSERT INTO Accepted VALUES (?, ?, ?, ?, CURDATE())',
+		           (man_id, issue, order, total_pages + 1))
 
 """
 editor_publish: sets all manuscripts in the issue to 'published' assuming at least one manuscript is scheduled for the issue
 """
+
+
 def editor_publish(db: MySQLCursorPrepared, issue):
 	db.execute('SELECT COUNT(*) FROM Accepted WHERE journal_id = ?', (issue))
-    if db.fetchone() < 1:
-        print("The journal has no scheduled manuscripts")
-    else:
-        db.execute('UPDATE Manuscript JOIN Accepted on id = manuscript_id SET man_status = "Published" WHERE journal_id = ?', (issue))
+	if db.fetchone() < 1:
+		print("The journal has no scheduled manuscripts")
+	else:
+		db.execute(
+			'UPDATE Manuscript JOIN Accepted on id = manuscript_id SET man_status = "Published" '
+			'WHERE journal_id = ?', (issue))
 
 """
 reviewer_register: inserts a new user into the user table and then adds the user into the 
                    reviewer table. 
                    Returns the user_id
 """
+
+
 def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 	user_id = user_register(db, 'reviewer')
 	db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)',
@@ -368,23 +409,32 @@ def reviewer_status(db: MySQLCursorPrepared, user_id):
 	           'WHERE reviewer_id = ? ORDER BY man_status', (user_id))
 	db_print(db)
 
+
 """
 reviewer_review: updates the Feedback table for the reviewer with their scores and status
 """
+
+
 def reviewer_review(db: MySQLCursorPrepared, status, user_id, man_id, a_score, c_score, m_score, e_score):
 	db.execute('UPDATE Feedback SET A_score = ?, C_score = ?, M_score = ?, E_score = ?,'
 	           'recommendation = ? WHERE manuscript_id = ? AND reviewer_id = ?',
 	           (a_score, c_score, m_score, e_score, status, man_id, user_id))
 
+
 """
 reviewer_resign: deletes the user from the user table 
 """
+
+
 def reviewer_resign(db: MySQLCursorPrepared, user_id):
 	db.execute('DELETE FROM Users WHERE id = ?', (user_id))
+
 
 """
 cleanup: closes connection and cursor.
 """
+
+
 def cleanup(conn, db):
 	try:
 		db.close()
