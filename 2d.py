@@ -63,43 +63,53 @@ user_auth: parses the initial user input to determine if the command is a
 """
 
 
-def user_auth(db):
+def user_register(db: MySQLCursorPrepared, command):
+	if command[1] == 'author':
+		if len(command) != 6:
+			print('usage: register author <fname> <lname> <email> <affiliation>')
+			return None, None
+		
+		user_id = author_register(db, command[2], command[3], command[4], command[5])
+		print(f'Your id is {user_id}. Write it down somewhere.')
+		
+		return user_id, 'author'
+	elif command[1] == 'editor':
+		if len(command) != 4:
+			print('usage: register editor <fname> <lname>')
+			return None, None
+		
+		user_id = editor_register(db, command[2], command[3])
+		print(f'Your id is {user_id}. Write it down somewhere.')
+		
+		return user_id, 'editor'
+	elif command[1] == 'reviewer':
+		if len(command) < 5 or len(command) > 7:
+			print('usage: register reviewer <fname> <lname> <ICode 1> [<ICode 2> [<ICode 3>]]')
+			return None, None
+		
+		user_id = reviewer_register(db, command[2], command[3], command[4:])
+		print(f'Your id is {user_id}. Write it down somewhere.')
+		
+		return user_id, 'reviewer'
+	else:
+		print(errmsg)
+		return None, None
+
+
+def user_auth(db: MySQLCursorPrepared):
 	print('Login or register')
 	"""Step 1. register or login"""
+	registered = False
 	while True:
 		command = input().split()
 		if command[0] == 'register':
-			if command[1] == 'author':
-				if len(command) != 6:
-					print('usage: register author <fname> <lname> <email> <affiliation>')
-					continue
-				
-				user_id = author_register(db, command[2], command[3], command[4], command[5])
-				print(f'Your id is {user_id}. Write it down somewhere.')
-				
-				return user_id, 'author'
-			elif command[1] == 'editor':
-				if len(command) != 4:
-					print('usage: register editor <fname> <lname>')
-					continue
-				
-				user_id = editor_register(db, command[2], command[3])
-				print(f'Your id is {user_id}. Write it down somewhere.')
-				
-				return user_id, 'editor'
-			elif command[1] == 'reviewer':
-				if len(command) < 5 or len(command) > 7:
-					print('usage: register reviewer <fname> <lname> <ICode 1> [<ICode 2> [<ICode 3>]]')
-					continue
-				
-				user_id = reviewer_register(db, command[2], command[3], command[4:])
-				print(f'Your id is {user_id}. Write it down somewhere.')
-				
-				return user_id, 'reviewer'
-			else:
-				print(errmsg)
-		elif command[0] == 'login':
-			if len(command) != 2:
+			user_id, user_type = user_register(db, command)
+			if user_id is None:
+				continue
+			registered = True
+		
+		if command[0] == 'login' or registered:
+			if not registered and len(command) != 2:
 				print('usage: login <id>')
 				continue
 			
