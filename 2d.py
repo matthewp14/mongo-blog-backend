@@ -161,11 +161,12 @@ def author_main(db: MySQLCursorPrepared, user_id):
 			author_status(db, user_id)
 		elif command[0] == 'submit':
 			if len(command) < 4:
-				print('usage: submit <title> <Affiliation> <ICode> [<author2> [<author3> [...]]]'
-				      ' <filename>')
+				print('usage: submit <title> <Affiliation_name> <ICode> '
+				      '[<author2-fname> <author2-lname> [<author3-fname> <author3-lname> [...]]] '
+				      '<filename>')
 				continue
 			
-			author_submit(db, user_id, command[2], command[1], command[3], command[4:-1], command[:-1])
+			author_submit(db, user_id, command[1], command[2], command[3], command[4:-1], command[-1])
 		else:
 			print(errmsg)
 
@@ -283,6 +284,14 @@ def author_register(db: MySQLCursorPrepared, fname, lname, email, affiliation):
 	return user_id
 
 
+def coauthor_register(db: MySQLCursorPrepared, fname, lname, org_id):
+	user_id = user_register(db, 'author')
+	db.execute('INSERT INTO Author (id, fname, lname, organization_id) VALUES (?, ?, ?, ?)',
+	           [user_id, fname.title(), lname.title(), org_id])
+	
+	return user_id
+
+
 def author_status(db: MySQLCursorPrepared, user_id):
 	"""produces a report of all the author’s manuscripts currently in the system where he/she
 	is the primary author. Only the most recent status timesstamp is kept and reported."""
@@ -291,14 +300,13 @@ def author_status(db: MySQLCursorPrepared, user_id):
 
 
 """
-author_submit: Inserts a new manuscript into the system. Following this the funciton
+author_submit: Inserts a new manuscript into the system. Following this the function
                registers all affiliated authors with the manuscript and updates the organization
                of the primary author
 """
 
 
-def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, authors, filename):
-	# TODO: read the filename into a BLOB!
+def author_submit(db: MySQLCursorPrepared, author_id, title, org_name, icode, coauthors, filename):
 	try:
 		with open(filename, 'rb') as f:
 			txt = f.read()
@@ -307,17 +315,28 @@ def author_submit(db: MySQLCursorPrepared, author_id, org_name, title, icode, au
 	
 	db.execute('INSERT INTO Manuscript (title, body, received_date, ICode_id)'
 	           'VALUES (?, ?, CURDATE(), ?)', [title.title(), txt, icode])
-	man_id = db.execute('SELECT LAST_INSERT_ID()')
+	db.execute('SELECT LAST_INSERT_ID()')
+	man_id = db.fetchone()[0]
 	
 	db.execute('INSERT INTO Organizations (org_name) VALUES (?)', [org_name])
-	org_id = db.execute('SELECT LAST_INSERT_ID()')
+	db.execute('SELECT LAST_INSERT_ID()')
+	org_id = db.fetchone()[0]
+	
+	# all authors get organization_id assigned - primary author
 	db.execute('UPDATE Author SET organization_id = ? WHERE id = ?', [org_id, author_id])
 	
-	db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', [man_id, author_id, 1])
-	i = 2
-	for author in authors:
-		db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', [man_id, author, i])
-		i = i + 1
+	# check if authors in the system
+	authors = [author_id]
+	for i in range(0, len(coauthors), 2):
+		db.execute('SELECT id FROM Author WHERE fname = ? AND lname = ?',
+		           [coauthors[i], coauthors[i + 1]])
+		co_id = db.fetchone()[0]
+		if not co_id:
+			co_id = coauthor_register(db, coauthors[i], coauthors[i + 1], org_id)
+		authors.append(co_id)
+	
+	for i in range(len(authors)):
+		db.execute('INSERT INTO Authorship VALUES (?, ?, ?)', [man_id, authors[i], i])
 
 
 """
