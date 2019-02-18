@@ -108,20 +108,20 @@ def user_auth(db):
 			
 			if user_type == 'author':
 				user = user_get(db, command[1], 'author')
-				print(f"Hello, {user['fname']} {user['lname']} @ {user['email']}!")
-				author_status(db, user['id'])
+				print(f"Hello, {user[1]} {user[2]} @ {user[3]}!")
+				author_status(db, user[0])
 				
 				return command[1], 'author'
 			elif user_type == 'editor':
 				user = user_get(db, command[1], 'editor')
-				print(f"Hello, {user['fname']} {user['lname']}!")
-				editor_status(db)
+				print(f"Hello, {user[1]} {user[2]}!")
+				editor_status(db, user[0])
 				
 				return command[1], 'editor'
 			elif user_type == 'reviewer':
 				user = user_get(db, command[1], 'reviewer')
-				print(f"Hello, {user['fname']} {user['lname']}!")
-				reviewer_status(db, user['id'])
+				print(f"Hello, {user[1]} {user[2]}!")
+				reviewer_status(db, user[0])
 				
 				return command[1], 'reviewer'
 		elif command[0] == 'resign':
@@ -236,6 +236,10 @@ def user_register(db: MySQLCursorPrepared, user_type):
 	db.execute('SELECT LAST_INSERT_ID()')
 	
 	return db.fetchone()[0]
+
+
+def user_delete(db: MySQLCursorPrepared, user_id):
+	db.execute('DELETE FROM Users WHERE id = ?', [user_id])
 
 
 """
@@ -358,11 +362,11 @@ def editor_schedule(db: MySQLCursorPrepared, man_id, issue):
 	total_pages = db.fetchone()[0]
 	
 	db.execute('SELECT pages FROM Manuscript WHERE id = ?', [man_id])
-	added_pages = db.fetchone()['pages']
+	added_pages = db.fetchone()[0]
 	
 	db.execute('SELECT man_status from Manuscript WHERE id = ?', [man_id])
 	
-	if db.fetchone()['man_status'] != 'ready':
+	if db.fetchone()[0] != 'ready':
 		print('The manuscripts must be ready to be published')
 	elif total_pages + added_pages > 100:
 		print('The page count is exceeded for this issue')
@@ -396,8 +400,12 @@ reviewer_register: inserts a new user into the user table and then adds the user
 
 def reviewer_register(db: MySQLCursorPrepared, fname, lname, icodes):
 	user_id = user_register(db, 'reviewer')
-	db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)',
-	           [user_id, fname.title(), lname.title()])
+	try:
+		db.execute('INSERT INTO Reviewer (id, fname, lname) VALUES (?, ?, ?)',
+		           [user_id, fname.title(), lname.title()])
+	except Error as err:
+		user_delete(db, user_id)
+		return print(err.msg)
 	for icode in icodes:
 		db.execute('INSERT INTO Reviewer_ICode VALUES (?, ?)', [user_id, icode])
 	
